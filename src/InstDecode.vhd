@@ -128,7 +128,7 @@ begin
 							is_mem_read <= '0';
 							is_mem_write <= '0';
 							is_reg_write <= '1';
-							alu_opcode <= ALU_L;
+							alu_opcode <= ALU_LS;
 							rd_id <= rd_id_inst;
 						when others => NULL;
 					end case;

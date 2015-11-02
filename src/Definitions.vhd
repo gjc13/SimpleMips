@@ -7,13 +7,10 @@ package Definitions is
 	constant ALU_NOT : INTEGER := 5;
 	constant ALU_SHL : INTEGER := 6;
 	constant ALU_SHR : INTEGER := 7;
-	constant ALU_EQ : INTEGER := 8;
-	constant ALU_NE : INTEGER := 9;
-	constant ALU_G  : INTEGER := 10;
-	constant ALU_GE : INTEGER := 11;
-	constant ALU_L  : INTEGER := 12;
-	constant ALU_LE : INTEGER := 13;
+	constant ALU_LS : INTEGER := 12; --less signed
+	constant ALU_LU : INTEGER := 13; --less unsigned
 
+	-- all branch compare is signed compare
 	constant B_ALL: INTEGER := 0;
 	constant B_EQ : INTEGER := 1;
 	constant B_NE : INTEGER := 2;

@@ -199,7 +199,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
-		assert alu_opcode = ALU_L report "alu_opcode error" severity error;
+		assert alu_opcode = ALU_LS report "alu_opcode error" severity error;
 		assert rd_id = 11 report "rd_id error" severity error;
 		assert is_block = '0' report "is_block error" severity error;
 		wait for 10ns;
