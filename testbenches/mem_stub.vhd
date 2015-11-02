@@ -35,13 +35,14 @@ use IEEE.NUMERIC_STD.ALL;
 entity mem_stub is
     Port (  addr : in  unsigned (31 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
-			read_enable : in STD_LOGIC;
-            write_enable : in  STD_LOGIC;
+			r : in STD_LOGIC;
+            w : in  STD_LOGIC;
+			en : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end mem_stub;
 
 architecture Behavioral of mem_stub is
-	type RamType is array(0 to 2**17-1) of STD_LOGIC_VECTOR(31 downto 0);
+	type RamType is array(0 to 2**8-1) of STD_LOGIC_VECTOR(31 downto 0);
 
 	impure function InitRamFromFile(RamFileName: in string) return RamType is
 		FILE ramFile : text is in RamFileName;
@@ -56,19 +57,19 @@ architecture Behavioral of mem_stub is
 	end function;
 
 begin
-	process(write_enable, read_enable, reset)
+	process(w, r, reset)
 		variable ram: RamType := InitRamFromFile("ram.data");
 		variable debugline: line;
 	begin
-		if reset = '1' then
+		if reset = '1' or en = '0' then
 			data <= (others => 'Z');
-		elsif write_enable = '1' and read_enable = '0' then
+		elsif w = '1' and r = '0' then
 			ram(to_integer(unsigned(addr))) := data;
 			report "write";
 			write(debugline, ram(to_integer(unsigned(addr))));
 			writeline(OUTPUT, debugline);
 			data <= (others => 'Z');
-		elsif read_enable = '1' and write_enable = '0' then
+		elsif r = '1' and w = '0' then
 			data <= ram(to_integer(unsigned(addr)));
 		else
 			data <= (others => 'Z');
