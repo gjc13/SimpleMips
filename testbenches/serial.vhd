@@ -29,26 +29,24 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
-
-entity serial is
+entity serial_stub is
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
 			data : inout  STD_LOGIC_VECTOR(31 downto 0);
 			intr : in  STD_LOGIC;
 			w : in  STD_LOGIC;
 			r : in STD_LOGIC;
-			en : in STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset : in STD_LOGIC);
-end serial;
+end serial_stub;
 
 
-architecture serialBehavioral of serial is
+architecture serialBehavioral of serial_stub is
 
 begin
 	process(clk)
 	variable s: String(1 to 32);
 	begin
-		if (reset = '1' or en = '0') then
+		if (reset = '1') then
 			data <= (others => 'Z');
 		elsif (clk'event and clk = '1') then
 			if (w = '1' and r = '0') then

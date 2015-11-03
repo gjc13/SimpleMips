@@ -33,11 +33,10 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity mem_stub is
-    Port (  addr : in  unsigned (31 downto 0);
+    Port (  addr : in  STD_LOGIC_VECTOR (31 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
-			r : in STD_LOGIC;
+				r : in STD_LOGIC;
             w : in  STD_LOGIC;
-			en : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end mem_stub;
 
@@ -59,15 +58,11 @@ architecture Behavioral of mem_stub is
 begin
 	process(w, r, reset)
 		variable ram: RamType := InitRamFromFile("ram.data");
-		variable debugline: line;
 	begin
-		if reset = '1' or en = '0' then
+		if reset = '1' then
 			data <= (others => 'Z');
 		elsif w = '1' and r = '0' then
 			ram(to_integer(unsigned(addr))) := data;
-			report "write";
-			write(debugline, ram(to_integer(unsigned(addr))));
-			writeline(OUTPUT, debugline);
 			data <= (others => 'Z');
 		elsif r = '1' and w = '0' then
 			data <= ram(to_integer(unsigned(addr)));

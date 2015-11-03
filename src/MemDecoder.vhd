@@ -18,14 +18,16 @@
 --
 ----------------------------------------------------------------------------------
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL; use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_1164.ALL; 
+use IEEE.NUMERIC_STD.ALL;
+use work.utilities.all;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
--- warning: signal reset should hold 1 until the last mem clk cycle of every cpu cycle
+--cpu_clk should be 4 times slower than clk
 entity MemDecoder is
     Port (  addr : in  STD_LOGIC_VECTOR (31 downto 0);
 			r : in  STD_LOGIC;
@@ -35,11 +37,10 @@ entity MemDecoder is
 			addr_bus : out  STD_LOGIC_VECTOR (31 downto 0);
 			r_bus : out  STD_LOGIC;
 			w_bus : out  STD_LOGIC;
-			en_serial : out STD_LOGIC;
-			en_sram : out STD_LOGIC;
 			data_bus : inout  STD_LOGIC_VECTOR (31 downto 0);
 			reset : in STD_LOGIC;
-			clk : in STD_LOGIC);
+			clk : in STD_LOGIC;
+			cpu_clk : in STD_LOGIC);
 end MemDecoder;
 
 architecture Behavioral of MemDecoder is
@@ -53,6 +54,7 @@ architecture Behavioral of MemDecoder is
 	signal visit_type_latch : VisitEnum;
 	signal addr_latch : std_logic_vector(31 downto 0);
 	signal data_in_latch : std_logic_vector(31 downto 0);
+	signal reset_latch : std_logic;
 	signal pr_state : State;
 	signal next_state : State;
 	signal next_r_bus : std_logic;
@@ -65,10 +67,6 @@ begin
 			pr_state <= IDLE;
 		elsif (clk'event and clk = '1') then
 			case pr_state is
-				when IDLE =>
-					visit_type_latch <= visit_type;
-					addr_latch <= addr;
-					data_in_latch <= data_in;
 				when READ1 =>
 					if(visit_type_latch = SRAM) then
 						data_out <= data_bus;
@@ -79,13 +77,20 @@ begin
 					end if;
 				when others => null;
 			end case;
-			if(pr_state = IDLE) then
-				visit_type_latch <= visit_type;
-			end if;
 			pr_state <= next_state;
 			r_bus <= next_r_bus;
 			w_bus <= next_w_bus;
 			data_bus <= next_data_bus;
+		end if;
+	end process;
+	
+	process(cpu_clk)
+	begin
+		if(cpu_clk'event and cpu_clk = '1') then
+			data_in_latch <= data_in;
+			visit_type_latch <= visit_type;
+			addr_latch <= addr;
+			reset_latch <= reset;
 		end if;
 	end process;
 
@@ -94,24 +99,14 @@ begin
 	begin
 		if (addr_latch = X"bfd00000" or addr_latch = X"bfd00004") then
 			visit_type <= SERIAL;
-			if(addr_latch = X"bfd00000") then
-				addr_bus <= X"00000000";
-			else
-				addr_bus <= X"00000004";
-			end if;
-			en_serial <= '1';
-			en_sram <= '0';
+			addr_bus <= addr_latch;
 		elsif (unsigned(addr_latch) >= KSEG0_LO and unsigned(addr_latch) < KSEG0_HI) then
 			-- kseg0 we strip off the first bit
 			visit_type <= SRAM;
 			addr_bus <= addr_latch and X"7FFFFFFF";
-			en_serial <= '0';
-			en_sram <= '1';
 		else
 			visit_type <= SRAM;
 			addr_bus <= addr_latch;
-			en_serial <= '0';
-			en_sram <= '1';
 		end if;
 	end process;
 
@@ -123,7 +118,7 @@ begin
 				if (w = '1') then
 					next_r_bus <= '0';
 					next_w_bus <= '0';
-					next_data_bus <= data_in_latch;
+					next_data_bus <= data_in;
 				elsif (r = '1') then
 					next_r_bus <= '1';
 					next_w_bus <= '0';
@@ -132,7 +127,7 @@ begin
 			when READ1 =>
 				next_r_bus <= '1';
 				next_w_bus <= '0';
-				next_data_bus <= data_in_latch;
+				next_data_bus <= (others => 'Z');
 			when READ2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
@@ -161,11 +156,13 @@ begin
 	end process;
 
 	-- the state machine logic
-	process(r, w, data_in_latch, pr_state)
+	process(r, w, pr_state, reset_latch)
 	begin
 		case pr_state is
 			when IDLE =>
-				if(r = '1' and w = '0') then
+				if(reset_latch = '1') then
+					next_state <= NOP1;
+				elsif(r = '1' and w = '0') then
 					next_state <= READ1;
 				elsif(r = '0' and w = '1') then
 					next_state <= WRITE1;
