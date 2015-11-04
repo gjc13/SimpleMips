@@ -42,39 +42,60 @@ ARCHITECTURE behavior OF test_BranchByPass IS
  
     COMPONENT BranchByPass
     PORT(
-         rs : IN  std_logic_vector(31 downto 0);
-         rt : IN  std_logic_vector(31 downto 0);
-         immediate : IN  std_logic_vector(31 downto 0);
-         is_reg_inst : IN  std_logic;
-           branch_opcode : in  INTEGER RANGE 0 to 15;
-         is_branch : IN  std_logic;
-         is_jump : IN  std_logic;
-         is_jr : IN  std_logic;
-         branch_offset : IN  std_logic_vector(31 downto 0);
-         next_pc : IN  std_logic_vector(31 downto 0);
-         jump_pc : IN  std_logic_vector(31 downto 0);
-         final_pc : OUT  std_logic_vector(31 downto 0);
-         need_branch : OUT  std_logic
-        );
-    END COMPONENT;
+			rs : IN  std_logic_vector(31 downto 0);
+			rt : in  STD_LOGIC_VECTOR (31 downto 0);
+			immediate : in  STD_LOGIC_VECTOR (31 downto 0);
+			l_result : in STD_LOGIC_VECTOR(31 downto 0);
+			ll_result : in STD_LOGIC_VECTOR(31 downto 0);
+			lll_result : in STD_LOGIC_VECTOR(31 downto 0);
+			rs_id : in INTEGER RANGE 0 to 127;
+			rt_id : in INTEGER RANGE 0 to 127;
+			l_rd_id : in INTEGER RANGE 0 to 127;
+			ll_rd_id : in INTEGER RANGE 0 to 127;
+			lll_rd_id : in INTEGER RANGE 0 to 127;
+			l_is_reg_write : in STD_LOGIC;
+			ll_is_reg_write : in STD_LOGIC;
+			lll_is_reg_write : in STD_LOGIC;
+			is_reg_inst : in  STD_LOGIC;
+			branch_opcode : in  INTEGER RANGE 0 to 15;
+			is_branch : in  STD_LOGIC;
+			is_jump : in  STD_LOGIC;
+			is_jr : in  STD_LOGIC;
+			branch_offset : in  STD_LOGIC_VECTOR (31 downto 0);
+			next_pc : in  STD_LOGIC_VECTOR (31 downto 0);
+			jump_pc : in  STD_LOGIC_VECTOR (31 downto 0);
+			final_pc : out  STD_LOGIC_VECTOR (31 downto 0);
+			need_branch : out  STD_LOGIC);
+       END COMPONENT;
     
-
    --Inputs
-   signal rs : std_logic_vector(31 downto 0) := (others => '0');
-   signal rt : std_logic_vector(31 downto 0) := (others => '0');
-   signal immediate : std_logic_vector(31 downto 0) := (others => '0');
-   signal is_reg_inst : std_logic := '0';
-   signal branch_opcode : integer range 0 to 15;
-   signal is_branch : std_logic := '0';
-   signal is_jump : std_logic := '0';
-   signal is_jr : std_logic := '0';
-   signal branch_offset : std_logic_vector(31 downto 0) := (others => '0');
-   signal next_pc : std_logic_vector(31 downto 0) := (others => '0');
-   signal jump_pc : std_logic_vector(31 downto 0) := (others => '0');
+	signal rs : std_logic_vector(31 downto 0) := (others => '0');
+	signal rt : std_logic_vector(31 downto 0) := (others => '0');
+	signal immediate : std_logic_vector(31 downto 0) := (others => '0');
+	signal l_result : STD_LOGIC_VECTOR(31 downto 0);
+	signal ll_result : STD_LOGIC_VECTOR(31 downto 0);
+	signal lll_result : STD_LOGIC_VECTOR(31 downto 0);
+	signal rs_id : INTEGER RANGE 0 to 127;
+	signal rt_id : INTEGER RANGE 0 to 127;
+	signal l_rd_id : INTEGER RANGE 0 to 127;
+	signal ll_rd_id : INTEGER RANGE 0 to 127;
+	signal lll_rd_id : INTEGER RANGE 0 to 127;
+	signal l_is_reg_write : STD_LOGIC;
+	signal ll_is_reg_write : STD_LOGIC;
+	signal lll_is_reg_write : STD_LOGIC;
 
- 	--Outputs
-   signal final_pc : std_logic_vector(31 downto 0);
-   signal need_branch : std_logic;
+	signal is_reg_inst : std_logic := '0';
+	signal branch_opcode : integer range 0 to 15;
+	signal is_branch : std_logic := '0';
+	signal is_jump : std_logic := '0';
+	signal is_jr : std_logic := '0';
+	signal branch_offset : std_logic_vector(31 downto 0) := (others => '0');
+	signal next_pc : std_logic_vector(31 downto 0) := (others => '0');
+	signal jump_pc : std_logic_vector(31 downto 0) := (others => '0');
+
+	--Outputs
+	signal final_pc : std_logic_vector(31 downto 0);
+	signal need_branch : std_logic;
  
 BEGIN
  
@@ -83,6 +104,17 @@ BEGIN
           rs => rs,
           rt => rt,
           immediate => immediate,
+		  l_result => l_result,
+		  ll_result => ll_result,
+		  lll_result => lll_result,
+		  rs_id => rs_id,
+		  rt_id => rt_id,
+		  l_rd_id => l_rd_id,
+		  ll_rd_id => ll_rd_id,
+		  lll_rd_id => lll_rd_id,
+		  l_is_reg_write => l_is_reg_write,
+		  ll_is_reg_write => ll_is_reg_write,
+		  lll_is_reg_write => lll_is_reg_write,
           is_reg_inst => is_reg_inst,
           branch_opcode => branch_opcode,
           is_branch => is_branch,
@@ -102,6 +134,9 @@ BEGIN
       -- hold reset state for 100 ns.
 		wait for 10 ns;
 
+		l_is_reg_write <= '0';
+		ll_is_reg_write <= '0';
+		lll_is_reg_write <= '0';
 		is_branch <= '1';
 		
 		report "test b_all";
@@ -226,6 +261,50 @@ BEGIN
 		wait for 10 ns;
 		assert need_branch = '0' report "need branch error" severity error;
 
+		report "test avoid $0 bypass";
+		branch_opcode <= B_EQ;
+		rs <= X"00000000";
+		rt <= X"00000000";
+		l_result <= X"00000001";
+		ll_result <= X"00000002";
+		lll_result <= X"00000003";
+		rs_id <= 0;
+		rt_id <= 2;
+		l_rd_id <= 0;
+		ll_rd_id <= 0;
+		lll_rd_id <= 0;
+		l_is_reg_write <= '1';
+		ll_is_reg_write <= '1';
+		lll_is_reg_write <= '1';
+		is_reg_inst <= '1';
+		wait for 10 ns;
+		assert need_branch = '1' report "need branch error" severity error;
+
+		report "test l_result priority";
+		rt <= X"00000001";
+		rs_id <= 1;
+		l_rd_id <= 1;
+		ll_rd_id <= 1;
+		lll_rd_id <= 1;
+		wait for 10 ns;
+		assert need_branch = '1' report "need branch error" severity error;
+
+		report "test ll_result priority";
+		rs <= X"00000002";
+		rs_id <= 2;
+		rt_id <= 1;
+		l_is_reg_write <= '0';
+		wait for 10 ns;
+		assert need_branch = '1' report "need branch error" severity error;
+
+		report "test use lll_result";
+		immediate <= X"00000003";
+		rs_id <= 1;
+		is_reg_inst <= '0';
+		ll_is_reg_write <= '0';
+		wait for 10 ns;
+		assert need_branch = '1' report "need branch error" severity error;
+
 		report "test jr";
 		is_jr <= '1';
 		is_jump <= '1';
@@ -240,6 +319,7 @@ BEGIN
 		wait for 10 ns;
 		assert need_branch = '1' report "need branch error" severity error;
 		assert final_pc = X"00000004" report " final_pc error" severity error;
+
 
 		report "test finish"; 
 
