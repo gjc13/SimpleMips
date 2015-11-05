@@ -35,7 +35,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity mem_stub is
     Port (  addr : in  STD_LOGIC_VECTOR (31 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
-				r : in STD_LOGIC;
+			r : in STD_LOGIC;
             w : in  STD_LOGIC;
 			reset : in STD_LOGIC);
 end mem_stub;
