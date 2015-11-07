@@ -30,13 +30,15 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity FlashController is
-    Port ( addr_bus : in  STD_LOGIC_VECTOR (31 downto 0);
-           data_bus : in  STD_LOGIC_VECTOR (31 downto 0);
-           r_bus : in  STD_LOGIC;
-           w_bus : in  STD_LOGIC;
-           flash_addr : out  STD_LOGIC_VECTOR (22 downto 0);
-           flash_data : out  STD_LOGIC_VECTOR (15 downto 0);
-			  intr : out STD_LOGIC);
+    Port (  addr_bus : inout  STD_LOGIC_VECTOR (31 downto 0);
+			data_bus : inout  STD_LOGIC_VECTOR (31 downto 0);
+			r_bus : inout  STD_LOGIC;
+			w_bus : inout  STD_LOGIC;
+			flash_addr : out  STD_LOGIC_VECTOR (22 downto 0);
+			flash_data : out  STD_LOGIC_VECTOR (15 downto 0);
+			mem_bus_use : in STD_LOGIC;
+			flash_bus_use : out STD_LOGIC;
+			intr : out STD_LOGIC);
 end FlashController;
 
 architecture Behavioral of FlashController is
