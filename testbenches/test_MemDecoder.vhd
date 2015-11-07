@@ -78,13 +78,13 @@ ARCHITECTURE behavior OF test_MemDecoder IS
    Port ( addr_bus : in  STD_LOGIC_VECTOR (31 downto 0);
            r_bus : in  STD_LOGIC;
            w_bus : in  STD_LOGIC;
-           addr_sram : out  STD_LOGIC_VECTOR (31 downto 0);
+           addr_sram : out  STD_LOGIC_VECTOR (19 downto 0);
            r_sram : out  STD_LOGIC;
            w_sram : out  STD_LOGIC);
 	end component;
 
 	COMPONENT mem_stub 
-   Port (   addr : in  STD_LOGIC_VECTOR (31 downto 0);
+   Port (   addr : in  STD_LOGIC_VECTOR (19 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
 				r : in STD_LOGIC;
             w : in  STD_LOGIC;
@@ -104,7 +104,7 @@ ARCHITECTURE behavior OF test_MemDecoder IS
    --Inputs
    signal addr : std_logic_vector(31 downto 0) := (others => '0');
    signal addr_serial : std_logic_vector(31 downto 0);
-   signal addr_sram : std_logic_vector(31 downto 0);
+   signal addr_sram : std_logic_vector(19 downto 0);
    signal r : std_logic := '0';
    signal w : std_logic := '0';
    signal data_in : std_logic_vector(31 downto 0) := (others => '0');

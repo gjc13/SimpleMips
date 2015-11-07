@@ -33,11 +33,11 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity mem_stub is
-    Port (  addr : in  STD_LOGIC_VECTOR (31 downto 0);
+    Port (  addr : in  STD_LOGIC_VECTOR (19 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
-			r : in STD_LOGIC;
+			   r : in STD_LOGIC;
             w : in  STD_LOGIC;
-			reset : in STD_LOGIC);
+			   reset : in STD_LOGIC);
 end mem_stub;
 
 architecture Behavioral of mem_stub is

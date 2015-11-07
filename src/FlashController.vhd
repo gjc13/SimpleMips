@@ -1,10 +1,10 @@
 ----------------------------------------------------------------------------------
 -- Company: 
--- Engineer: gjc13
+-- Engineer: 
 -- 
--- Create Date:    13:31:19 11/03/2015 
+-- Create Date:    14:06:31 11/07/2015 
 -- Design Name: 
--- Module Name:    SRAMController - Behavioral 
+-- Module Name:    FlashController - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -29,28 +29,20 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity SRAMController is
+entity FlashController is
     Port ( addr_bus : in  STD_LOGIC_VECTOR (31 downto 0);
+           data_bus : in  STD_LOGIC_VECTOR (31 downto 0);
            r_bus : in  STD_LOGIC;
            w_bus : in  STD_LOGIC;
-           addr_sram : out  STD_LOGIC_VECTOR (19 downto 0);
-           r_sram : out  STD_LOGIC;
-           w_sram : out  STD_LOGIC);
-end SRAMController;
+           flash_addr : out  STD_LOGIC_VECTOR (22 downto 0);
+           flash_data : out  STD_LOGIC_VECTOR (15 downto 0);
+			  intr : out STD_LOGIC);
+end FlashController;
 
-architecture Behavioral of SRAMController is
+architecture Behavioral of FlashController is
+
 begin
-	process(addr_bus, r_bus, w_bus)
-	begin
-		addr_sram <= addr_bus(21 downto 2);
-		if(addr_bus = X"bfd00000" or addr_bus = X"bfd00004") then
-			r_sram <= '0';
-			w_sram <= '0';
-		else 
-			r_sram <= r_bus;
-			w_sram <= w_bus;
-		end if;
-	end process;
+
 
 end Behavioral;
 
