@@ -41,26 +41,26 @@ ARCHITECTURE behavior OF test_InstDecode IS
  
     COMPONENT InstDecode
     PORT(
-         inst : IN  std_logic_vector(31 downto 0);
-         l_is_mem_read : IN  std_logic;
-         l_is_mem_write : IN  std_logic;
-         is_jump : OUT  std_logic;
-         jump_pc : OUT  std_logic_vector(31 downto 0);
-         is_jr : OUT  std_logic;
-         is_jl : OUT  std_logic;
-         is_branch : OUT  std_logic;
-         branch_offset : OUT  std_logic_vector(31 downto 0);
+			inst : IN  std_logic_vector(31 downto 0);
+			l_is_mem_read : IN  std_logic;
+			l_is_mem_write : IN  std_logic;
+			is_jump : OUT  std_logic;
+			jump_pc : OUT  std_logic_vector(31 downto 0);
+			is_jr : OUT  std_logic;
+			is_jl : OUT  std_logic;
+			is_link : out STD_LOGIC;
+			is_branch : OUT  std_logic;
+			branch_offset : OUT  std_logic_vector(31 downto 0);
 			branch_opcode : out INTEGER RANGE 0 to 15;
-         is_reg_inst : OUT  std_logic;
-         is_mem_read : OUT  std_logic;
-         is_mem_write : OUT  std_logic;
+			is_reg_inst : OUT  std_logic;
+			is_mem_read : OUT  std_logic;
+			is_mem_write : OUT  std_logic;
 			mem_opcode : out INTEGER RANGE 0 to 7;
 			shift_amount : out INTEGER RANGE 0 to 31;
-         is_reg_write : OUT  std_logic;
+			is_reg_write : OUT  std_logic;
 			alu_opcode : out integer range 0 to 15;
 			rd_id : out integer range 0 to 127;
-         is_block : OUT  std_logic;
-         immediate : OUT  std_logic_vector(31 downto 0)
+			immediate : OUT  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
     
@@ -86,14 +86,11 @@ ARCHITECTURE behavior OF test_InstDecode IS
    signal is_reg_write : std_logic;
    signal alu_opcode : integer range 0 to 15;
    signal rd_id : integer range 0 to 127;
-   signal is_block : std_logic;
    signal immediate : std_logic_vector(31 downto 0);
    -- No clocks detected in port list. Replace <clock> below with 
    -- appropriate port name 
  
- 
 BEGIN
- 
 	-- Instantiate the Unit Under Test (UUT)
    uut: InstDecode PORT MAP (
           inst => inst,
@@ -114,7 +111,6 @@ BEGIN
           is_reg_write => is_reg_write,
           alu_opcode => alu_opcode,
           rd_id => rd_id,
-          is_block => is_block,
           immediate => immediate
         );
 
@@ -135,7 +131,7 @@ BEGIN
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_NONE report "alu_opcode error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing jr";
@@ -152,7 +148,7 @@ BEGIN
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing jalr";
@@ -169,7 +165,7 @@ BEGIN
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '1' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing addu";
@@ -185,7 +181,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
 		assert rd_id = 29 report "rd_id error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing slt";
@@ -201,7 +197,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_LS report "alu_opcode error" severity error;
 		assert rd_id = 11 report "rd_id error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing bgez";
@@ -217,7 +213,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing beq";
@@ -233,7 +229,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing bne";
@@ -249,7 +245,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing blez";
@@ -265,7 +261,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing bgtz";
@@ -281,7 +277,7 @@ BEGIN
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing addiu";
@@ -298,7 +294,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 29 report "rd_id error" severity error;
 		assert immediate = X"FFFFFFF8" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing ori";
@@ -315,7 +311,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 2 report "rd_id error" severity error;
 		assert immediate = X"000003f8" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing andi";
@@ -332,7 +328,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 2 report "rd_id error" severity error;
 		assert immediate = X"00000001" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing lui";
@@ -349,7 +345,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 3 report "rd_id error" severity error;
 		assert immediate = X"bfd00000" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing lb";
@@ -367,7 +363,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 0 report "rd_id error" severity error;
 		assert immediate = X"ffffb030" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing lw";
@@ -385,7 +381,7 @@ BEGIN
 		assert is_reg_write = '1' report "is_reg_write error" severity error;
 		assert rd_id = 2 report "rd_id error" severity error;
 		assert immediate = X"00003040" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
 		report "testing sw";
@@ -402,17 +398,9 @@ BEGIN
 		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
 		assert immediate = X"0000000c" report "immediate error" severity error;
-		assert is_block = '0' report "is_block error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
-		report "testing block";
-		l_is_mem_write <= '1';
-		wait for 10ns;
-		assert is_block = '1' report "is_block error" severity error;
-		l_is_mem_write <= '0';
-		l_is_mem_read <= '1';
-		wait for 10ns;
-		assert is_block = '1' report "is_block error" severity error;
 
       wait;
    end process;

@@ -33,26 +33,25 @@ use work.Definitions.ALL;
 
 entity InstDecode is
     Port (  inst : in  STD_LOGIC_VECTOR (31 downto 0);
-				l_is_mem_read : in  STD_LOGIC;
-				l_is_mem_write : in  STD_LOGIC;
-				is_jump : out  STD_LOGIC;
-				jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
-				is_jr 	: out  STD_LOGIC;
-				is_jl 	: out STD_LOGIC;
-				is_branch : out  STD_LOGIC;
-				branch_offset : out  STD_LOGIC_VECTOR (31 downto 0);
-				branch_opcode : out INTEGER RANGE 0 to 15;
-				is_reg_inst : out  STD_LOGIC;
-				is_mem_read : out  STD_LOGIC;
-				is_mem_write : out  STD_LOGIC;
-				mem_opcode : out INTEGER RANGE 0 to 7;
-				shift_amount : out INTEGER RANGE 0 to 31;
-				is_reg_write : out  STD_LOGIC;
-				alu_opcode : out  INTEGER RANGE 0 to 15;
-				rd_id : out  INTEGER RANGE 0 to 127;
-				is_block : out  STD_LOGIC;
-				immediate : out STD_LOGIC_VECTOR(31 downto 0)
-				);
+			l_is_mem_read : in  STD_LOGIC;
+			l_is_mem_write : in  STD_LOGIC;
+			is_jump : out  STD_LOGIC;
+			jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
+			is_jr 	: out  STD_LOGIC;
+			is_jl 	: out STD_LOGIC;
+			is_link : out STD_LOGIC;
+			is_branch : out  STD_LOGIC;
+			branch_offset : out  STD_LOGIC_VECTOR (31 downto 0);
+			branch_opcode : out INTEGER RANGE 0 to 15;
+			is_reg_inst : out  STD_LOGIC;
+			is_mem_read : out  STD_LOGIC;
+			is_mem_write : out  STD_LOGIC;
+			mem_opcode : out INTEGER RANGE 0 to 7;
+			shift_amount : out INTEGER RANGE 0 to 31;
+			is_reg_write : out  STD_LOGIC;
+			alu_opcode : out  INTEGER RANGE 0 to 15;
+			rd_id : out  INTEGER RANGE 0 to 127;
+			immediate : out STD_LOGIC_VECTOR(31 downto 0));
 end InstDecode;
 
 architecture Behavioral of InstDecode is
@@ -70,8 +69,6 @@ begin
 		rd_id_inst := to_integer(unsigned(inst(15 downto 11)));
 		funct := to_integer(unsigned(inst(5 downto 0))); 
 		if l_is_mem_read = '1' or l_is_mem_write = '1' then
-			is_block <= '1';
-			is_jump <= '0';
 			is_branch <= '0';
 			is_reg_inst <= '0';
 			is_mem_read <= '0';
@@ -79,7 +76,6 @@ begin
 			alu_opcode <= ALU_NONE;
 			is_reg_write <= '0';
 		else
-			is_block <= '0';
 			case op_code is
 				when 0 => 	--nop, jr, jalr, addu, slt, 
 					case funct is 
@@ -90,11 +86,13 @@ begin
 							is_mem_read <= '0';
 							is_mem_write <= '0';
 							is_reg_write <= '0';
+							is_link <= '0';
 							alu_opcode <= ALU_NONE;
 						when 8 => --jr
 							is_jump <= '1';
 							is_jr <= '1';
 							is_jl <= '0';
+							is_link <= '0';
 							is_branch <= '0';
 							is_reg_inst <= '1';
 							is_mem_read <= '0';
@@ -105,6 +103,7 @@ begin
 							is_jump <= '1';
 							is_jr <= '1';
 							is_jl <= '1';
+							is_link <= '1';
 							is_branch <= '0';
 							is_reg_inst <= '1';
 							is_mem_read <= '0';
@@ -115,6 +114,7 @@ begin
 						when 33 => --addu
 							is_jump <= '0';
 							is_branch <= '0';
+							is_link <= '0';
 							is_reg_inst <= '1';
 							is_mem_read <= '0';
 							is_mem_write <= '0';
@@ -124,6 +124,7 @@ begin
 						when 42 => --slt
 							is_jump <= '0';
 							is_branch <= '0';
+							is_link <= '0';
 							is_reg_inst <= '1';
 							is_mem_read <= '0';
 							is_mem_write <= '0';
@@ -136,6 +137,7 @@ begin
 				when 1 => --bgez
 					is_jump <= '0';
 					is_branch <= '1';
+					is_link <= '0';
 					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 					branch_opcode <= B_GE;
 					is_reg_inst <= '0';
@@ -147,6 +149,7 @@ begin
 				when 4 => --beq
 					is_jump <= '0';
 					is_branch <= '1';
+					is_link <= '0';
 					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 					branch_opcode <= B_EQ;
 					is_reg_inst <= '0';
@@ -158,6 +161,7 @@ begin
 				when 5 => --bne
 					is_jump <= '0';
 					is_branch <= '1';
+					is_link <= '0';
 					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 					branch_opcode <= B_NE;
 					is_reg_inst <= '0';
@@ -169,6 +173,7 @@ begin
 				when 6 => --blez
 					is_jump <= '0';
 					is_branch <= '1';
+					is_link <= '0';
 					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 					branch_opcode <= B_LE;
 					is_reg_inst <= '0';
@@ -180,6 +185,7 @@ begin
 				when 7 => --bgtz
 					is_jump <= '0';
 					is_branch <= '1';
+					is_link <= '0';
 					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 					branch_opcode <= B_G;
 					is_reg_inst <= '0';
@@ -191,6 +197,7 @@ begin
 				when 9 => --addiu
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '0';
 					is_mem_write <= '0';
@@ -202,6 +209,7 @@ begin
 				when 12 => --andi
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '0';
 					is_mem_write <= '0';
@@ -213,6 +221,7 @@ begin
 				when 13 => --ori
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '0';
 					is_mem_write <= '0';
@@ -224,6 +233,7 @@ begin
 				when 15 => --lui
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '0';
 					is_mem_write <= '0';
@@ -235,6 +245,7 @@ begin
 				when 32 => --lb
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '1';
 					is_mem_write <= '0';
@@ -247,6 +258,7 @@ begin
 				when 35 => --lw
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '1';
 					is_mem_write <= '0';
@@ -259,6 +271,7 @@ begin
 				when 43 => --sw
 					is_jump <= '0';
 					is_branch <= '0';
+					is_link <= '0';
 					is_reg_inst <= '0';
 					is_mem_read <= '0';
 					is_mem_write <= '1';
