@@ -35,10 +35,11 @@ entity CPUCore is
 			is_dma_mem : in STD_LOGIC;
 			is_cancel : in STD_LOGIC;
 			is_next_mem : out STD_LOGIC;
-			r_bus : out  STD_LOGIC;
-			w_bus : out  STD_LOGIC;
-			addr_bus : out  STD_LOGIC_VECTOR (31 downto 0);
-			data_bus : inout  STD_LOGIC_VECTOR (31 downto 0));
+			r_core : out  STD_LOGIC;
+			w_core : out  STD_LOGIC;
+			addr_core : out  STD_LOGIC_VECTOR (31 downto 0);
+			data_core : out STD_LOGIC_VECTOR (31 downto 0);
+			data_mem : in  STD_LOGIC_VECTOR (31 downto 0));
 end CPUCore;
 
 architecture Behavioral of CPUCore is
@@ -49,9 +50,9 @@ architecture Behavioral of CPUCore is
 	signal is_bubble: std_logic;
 	signal need_branch: std_logic;
 	signal branch_pc: std_logic_vector(31 downto 0);
-	signal data_out_mem : std_logic_vector(31 downto 0);
 	signal addr_pc : std_logic_vector(31 downto 0);
 	signal w_pc : std_logic;
+	signal r_pc : std_logic;
 	signal inst_if : std_logic_vector(31 downto 0);
 	signal npc_if : std_logic_vector(31 downto 0);
 	signal inst_id : std_logic_vector(31 downto 0);
@@ -104,22 +105,36 @@ architecture Behavioral of CPUCore is
 	signal is_mem_read_ex_final : std_logic;
 	signal is_mem_write_ex_final : std_logic;
 	signal is_reg_write_ex_final : std_logic;
+
+	signal result_mem : std_logic_vector(31 downto 0);
+	signal rt_mem : std_logic_vector(31 downto 0);
+	signal mem_op_code_mem : integer range 0 to 7;
+	signal is_mem_read_mem : std_logic;
+	signal is_mem_write_mem : std_logic;
+	signal is_reg_write_mem : std_logic;
+	signal rd_id_mem : integer range 0 to 127;
+
+	signal data_masked : std_logic_vector(31 downto 0);
+	signal result_mem_final : std_logic_vector(31 downto 0);
+
+	signal result_wb : std_logic_vector(31 downto 0);
+	signal is_reg_write_wb : std_logic;
+	signal rd_id_wb : integer range 0 to 127;
 begin
 	rs_id_id <= to_integer(unsigned(inst_id(31 downto 27)));
 	rt_id_id <= to_integer(unsigned(inst_id(26 downto 22)));
 	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
-	result_ex <= alu_result when is_link_ex = '0' else
-				 npc_ex when is_link_ex = '1'
-				 unaffected when others;
-	is_mem_read_ex_final = is_mem_read and (not is_cancel);
-	is_mem_write_ex_final = is_mem_write_ex and (not is_cancel);
-	is_reg_write_ex_final = is_reg_write_ex and (not is_cancel);
+	result_ex <= alu_result when is_link_ex = '0' else npc_ex;
+	is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
+	is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
+	is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
+	result_mem_final <= data_mem when is_mem_read_mem = '1' else result_mem;
 
 	if_phase: IFPhase Port Map(
 		is_bubble => is_bubble,
 		need_branch => need_branch,
 		branch_pc => branch_pc,
-		data_mem => data_out_mem,
+		data_mem => data_mem,
 		addr_pc => addr_pc,
 		r_pc => r_pc,
 		w_pc => w_pc,
@@ -191,9 +206,9 @@ begin
 	id_ex : ID_EX_Regs Port Map(
 		npc_id => npc_id,
 		npc_ex => npc_ex,
-		rs_id => rs_data_id,
+		rs_data_id => rs_data_id,
 		rs_ex => rs_ex,
-		rt_id => rt_data_id,
+		rt_data_id => rt_data_id,
 		rt_ex => rt_ex,
 		immediate_id => immediate_id,
 		immediate_ex => immediate_ex,
@@ -234,12 +249,11 @@ begin
 		rs => rs_ex,
 		rt => rt_ex,
 		immediate => immediate_ex,
-		l_result => result_mem,
+		l_result => result_mem_final,
 		ll_result => result_wb,
 		lhs => alu_lhs,
 		rhs => alu_rhs
 	);
-
 
 	reg : RegFile Port Map(
 		rs_id => rs_id_id,
@@ -261,6 +275,55 @@ begin
 		result => alu_result
 	);
 
+	ex_mem : EX_MEM_Regs Port Map(
+		result_ex => result_ex,
+		result_mem => result_mem,
+		rt_ex => rt_ex,
+		rt_mem => rt_mem,
+		mem_op_code_ex => mem_op_code_ex,
+		mem_op_code_mem => mem_op_code_mem,
+		is_mem_read_ex => is_mem_read_ex,
+		is_mem_read_mem => is_mem_read_mem,
+		is_mem_write_ex => is_mem_write_ex,
+		is_mem_write_mem => is_mem_write_mem,
+		is_reg_write_ex => is_reg_write_ex,
+		is_reg_write_mem => is_reg_write_mem,
+		rd_id_ex => rd_id_ex,
+		rd_id_mem => rd_id_mem,
+		clk => cpu_clk,
+		reset => reset
+	);
+
+	mem_conflict_solver: MemConflictSolver Port Map(
+		r_pc => r_pc,
+		w_pc => w_pc,
+		r_mem => is_mem_read_mem,
+		w_mem => is_mem_write_mem,
+		is_dma_mem => is_dma_mem,
+		addr_pc => addr_pc,
+		addr_mem => result_mem,
+		is_bubble => is_bubble,
+		addr_core => addr_core,
+		r_core => r_core,
+		w_core => w_core
+	);
+
+	data_mask : DataMasker Port Map(
+		data_in => data_mem,
+		mem_op_code => mem_op_code_mem,
+		data_out => data_masked
+	);
+
+	mem_wb : MEM_WB_Regs Port Map(
+		result_mem => result_mem_final,
+		result_wb => result_wb,
+		is_reg_write_mem => is_reg_write_mem,
+		is_reg_write_wb => is_reg_write_wb,
+		rd_id_mem => rd_id_mem,
+		rd_id_wb => rd_id_wb,
+		clk => cpu_clk,
+		reset => reset
+	);
 
 	--clk dividers
 	sub_clk_process :process(clk)
@@ -276,7 +339,6 @@ begin
 			cpu_clk <= not cpu_clk;
 		end if;
 	end process;
-
 
 end Behavioral;
 

@@ -27,6 +27,20 @@ package CPUComponent is
          cpu_clk : IN  std_logic);
 	end component;
 
+	component MemConflictSolver
+    port (  r_pc : in  STD_LOGIC;
+			w_pc : in  STD_LOGIC;
+			r_mem : in  STD_LOGIC;
+			w_mem : in  STD_LOGIC;
+			is_dma_mem : in STD_LOGIC;
+			addr_pc : in  STD_LOGIC_VECTOR (31 downto 0);
+			addr_mem : in  STD_LOGIC_VECTOR (31 downto 0);
+			is_bubble : out  STD_LOGIC;
+			addr_core : out  STD_LOGIC_VECTOR (31 downto 0);
+			r_core : out  STD_LOGIC;
+			w_core : out  STD_LOGIC);
+	end component;
+
 	component IFPhase
     port (  is_bubble : in  STD_LOGIC;
 			need_branch : in  STD_LOGIC;
@@ -46,8 +60,8 @@ package CPUComponent is
 			npc_id : out  STD_LOGIC_VECTOR (31 downto 0);
 			inst_if : in  STD_LOGIC_VECTOR (31 downto 0);
 			inst_id : out  STD_LOGIC_VECTOR (31 downto 0);
-			clk : in STD_LOGIC(31 downto 0);
-			reset : in STD_LOGIC(31 downto 0));
+			clk : in STD_LOGIC;
+			reset : in STD_LOGIC);
 	end component;
 
 	component InstDecode
@@ -119,24 +133,24 @@ package CPUComponent is
 			rs_ex : out  STD_LOGIC_VECTOR (31 downto 0);
 			rt_data_id : in  STD_LOGIC_VECTOR (31 downto 0);
 			rt_ex : out  STD_LOGIC_VECTOR (31 downto 0);
-			immediate_id : in  STD_LOGIC;
-			immediate_ex : out  STD_LOGIC;
+			immediate_id : in  STD_LOGIC_VECTOR (31 downto 0);
+			immediate_ex : out  STD_LOGIC_VECTOR (31 downto 0);
 			is_reg_inst_id : in  STD_LOGIC;
 			is_reg_inst_ex : out  STD_LOGIC;
 			shift_amount_id : integer range 0 to 31;
 			shift_amount_ex : integer range 0 to 31;
 			alu_op_code_id : integer range 0 to 15;
 			alu_op_code_ex : integer range 0 to 15;
-			is_link_id : in  STD_LOGIC_VECTOR (0 downto 0);
-			is_link_ex : out  STD_LOGIC_VECTOR (0 downto 0);
+			is_link_id : in  STD_LOGIC;
+			is_link_ex : out  STD_LOGIC;
 			mem_op_code_id : in  integer range 0 to 7;
 			mem_op_code_ex : out integer range 0 to 7;
 			is_mem_read_id : in  STD_LOGIC;
 			is_mem_read_ex : out  STD_LOGIC;
 			is_mem_write_id : in  STD_LOGIC;
-			is_mem_write_ex : out  STD_LOGIC;
+			is_mem_write_ex : out STD_LOGIC;
 			is_reg_write_id : in  STD_LOGIC;
-			is_reg_write_ex : out  STD_LOGIC;
+			is_reg_write_ex : out STD_LOGIC;
 			rs_id_id : in  integer range 0 to 127;
 			rs_id_ex : out integer range 0 to 127;
 			rt_id_id : in  integer range 0 to 127;
@@ -144,7 +158,7 @@ package CPUComponent is
 			rd_id_id : in  integer range 0 to 127;
 			rd_id_ex : out integer range 0 to 127;
 			clk : in STD_LOGIC;
-			reset : in STD_LOGIC(31 downto 0));
+			reset : in STD_LOGIC);
 	end component;
 
 	component DataByPass 
@@ -188,18 +202,25 @@ package CPUComponent is
 			rd_id_ex : in  integer range 0 to 127;
 			rd_id_mem : out integer range 0 to 127; 
 			clk : in  STD_LOGIC;
-			reset : in STD_LOGIC(31 downto 0));
+			reset : in STD_LOGIC);
 	end component;
+
+	component DataMasker
+    Port (  data_in : in  STD_LOGIC_VECTOR (31 downto 0);
+			mem_op_code : in integer range 0 to 7;
+			data_out : out  STD_LOGIC_VECTOR (31 downto 0));
+	end component;
+
 
 	component MEM_WB_Regs
     Port (  result_mem : in  STD_LOGIC_VECTOR (31 downto 0);
 			result_wb : out  STD_LOGIC_VECTOR (31 downto 0);
-			is_reg_write_mem : in  STD_LOGIC_VECTOR (31 downto 0);
-			is_reg_write_wb : out  STD_LOGIC_VECTOR (31 downto 0);
+			is_reg_write_mem : in  STD_LOGIC;
+			is_reg_write_wb : out  STD_LOGIC;
 			rd_id_mem : in  integer range 0 to 127;
 			rd_id_wb : out  integer range 0 to 127;
 			clk : in STD_LOGIC;
-			reset : in STD_LOGIC(31 downto 0));
+			reset : in STD_LOGIC);
 	end component;
 end CPUComponent;
 

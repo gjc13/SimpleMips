@@ -32,8 +32,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity MEM_WB_Regs is
     Port (  result_mem : in  STD_LOGIC_VECTOR (31 downto 0);
 			result_wb : out  STD_LOGIC_VECTOR (31 downto 0);
-			is_reg_write_mem : in  STD_LOGIC_VECTOR (31 downto 0);
-			is_reg_write_wb : out  STD_LOGIC_VECTOR (31 downto 0);
+			is_reg_write_mem : in  STD_LOGIC;
+			is_reg_write_wb : out  STD_LOGIC;
 			rd_id_mem : in  integer range 0 to 127;
 			rd_id_wb : out  integer range 0 to 127;
 			clk : in STD_LOGIC;
