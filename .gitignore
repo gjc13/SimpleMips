@@ -66,3 +66,5 @@ isim
 
 *.log
 *.data
+*.dump
+*.wcfg

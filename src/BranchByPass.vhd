@@ -117,14 +117,16 @@ begin
 		need_branch <= (is_branch and compare_result) or is_jump;
 	end process;
 
-	process(branch_offset, next_pc, is_branch, jump_pc, is_jump, rs, is_jr)
+	process(branch_offset, next_pc, is_branch, jump_pc, is_jump, is_jr, lhs)
 	begin 
-		if (is_jr = '1') then
-			final_pc <= rs;
-		elsif (is_jump = '1') then
-			final_pc <= jump_pc;
-		else
+		if (is_branch = '1' and is_jump = '0') then
 			final_pc <= std_logic_vector(unsigned(branch_offset) + unsigned(next_pc));
+		elsif (is_jump = '1' and is_jr = '0') then
+			final_pc <= jump_pc;
+		elsif (is_jr = '1') then
+			final_pc <= lhs;
+		else
+			final_pc <= X"00000000";
 		end if;
 	end process;
 end Behavioral;

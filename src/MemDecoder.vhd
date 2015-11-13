@@ -105,11 +105,15 @@ begin
 	end process;
 
 	-- the data and control rw bus drive logic
-	process(r, w, data_in, pr_state)
+	process(r, w, data_in, pr_state, reset_latch)
 	begin
 		case pr_state is 
 			when IDLE =>
-				if (w = '1') then
+				if (reset_latch = '1') then
+					next_r_bus <= '0';
+					next_w_bus <= '0';
+					next_data_bus <= (others => 'Z');
+				elsif (w = '1') then
 					next_r_bus <= '0';
 					next_w_bus <= '1';
 					next_data_bus <= data_in;
@@ -157,7 +161,9 @@ begin
 		else
 			case pr_state is
 				when IDLE =>
-					if(r = '1' and w = '0') then
+					if(reset_latch = '1') then
+						next_state <= NOP1;
+					elsif(r = '1' and w = '0') then
 						next_state <= READ1;
 					elsif(r = '0' and w = '1') then
 						next_state <= WRITE1;

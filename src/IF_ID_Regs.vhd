@@ -19,6 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.Utilities.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -47,6 +48,8 @@ begin
 			npc_id <= X"00000000";
 			inst_id <= X"00000000";
 		elsif(clk'event and clk = '1') then
+			report "inst_id";
+			print_hex(inst_if);
 			npc_id <= npc_if;
 			inst_id <= inst_if;
 		end if;

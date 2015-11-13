@@ -57,19 +57,23 @@ begin
 				if(is_regwrite = '1' and rd_id /= 0) then
 					regs(rd_id) <= rd_data;
 				end if;
-				if(rt_id = rd_id and rd_id /= 0 and is_regwrite = '1') then
-					rt_data <= rd_data;
-				else
-					rt_data <= regs(rt_id);
-				end if;
-				if(rs_id = rd_id and rd_id /= 0 and is_regwrite = '1') then
-					rs_data <= rd_data;
-				else
-					rs_data <= regs(rs_id);
-				end if;
 			end if;
 		end if;
 	end process;
 
+	process(rs_id, rt_id, rd_id, is_regwrite, rd_data)
+	begin
+		if(is_regwrite = '1' and rd_id = rt_id) then
+			rt_data <= rd_data;
+		else
+			rt_data <= regs(rt_id);
+		end if;
+		if(is_regwrite = '1' and rd_id = rs_id) then
+			rs_data <= rd_data;
+		else
+			rs_data <= regs(rs_id);
+		end if;
+	end process;
+	
 end Behavioral;
 

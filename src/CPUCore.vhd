@@ -31,6 +31,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity CPUCore is
     Port (  clk : in  STD_LOGIC;
+			cpu_clk : out STD_LOGIC;
 			reset : in STD_LOGIC;
 			is_dma_mem : in STD_LOGIC;
 			is_cancel : in STD_LOGIC;
@@ -44,8 +45,8 @@ end CPUCore;
 
 architecture Behavioral of CPUCore is
 
-	signal sub_clk: std_logic;
-	signal cpu_clk: std_logic;
+	signal sub_clk: std_logic := '0';
+	signal inner_cpu_clk: std_logic := '0';
 	
 	signal is_bubble: std_logic;
 	signal need_branch: std_logic;
@@ -120,14 +121,18 @@ architecture Behavioral of CPUCore is
 	signal result_wb : std_logic_vector(31 downto 0);
 	signal is_reg_write_wb : std_logic;
 	signal rd_id_wb : integer range 0 to 127;
+	
+	constant LINK_OFFSET : unsigned := X"00000004";
 begin
-	rs_id_id <= to_integer(unsigned(inst_id(31 downto 27)));
-	rt_id_id <= to_integer(unsigned(inst_id(26 downto 22)));
+   cpu_clk <= inner_cpu_clk;
+	rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
+	rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
 	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
-	result_ex <= alu_result when is_link_ex = '0' else npc_ex;
+	result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
 	is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
 	is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
 	is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
+	data_core <= rt_mem;
 	result_mem_final <= data_mem when is_mem_read_mem = '1' else result_mem;
 
 	if_phase: IFPhase Port Map(
@@ -140,7 +145,7 @@ begin
 		w_pc => w_pc,
 		inst_if => inst_if,
 		npc_if => npc_if,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
@@ -149,14 +154,13 @@ begin
 		npc_id => npc_id,
 		inst_if => inst_if,
 		inst_id => inst_id,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
 	inst_decoder : InstDecode Port Map(
 		inst => inst_id,
-		l_is_mem_read => is_mem_read_ex,
-		l_is_mem_write => is_mem_write_ex,
+		npc => npc_id,
 		is_jump => is_jump_id,
 		jump_pc => jump_pc_id,
 		is_jr 	=> is_jr_id,
@@ -234,7 +238,7 @@ begin
 		rt_id_ex => rt_id_ex,
 		rd_id_id => rd_id_id,
 		rd_id_ex => rd_id_ex,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
@@ -245,7 +249,7 @@ begin
 		ll_rd_id => rd_id_wb,
 		l_is_reg_write => is_reg_write_mem,
 		ll_is_reg_write => is_reg_write_wb,
-		is_reg_inst => is_reg_write_ex,
+		is_reg_inst => is_reg_inst_ex,
 		rs => rs_ex,
 		rt => rt_ex,
 		immediate => immediate_ex,
@@ -263,7 +267,7 @@ begin
 		rd_data => result_wb,
 		rs_data => rs_data_id,
 		rt_data => rt_data_id,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
@@ -290,7 +294,7 @@ begin
 		is_reg_write_mem => is_reg_write_mem,
 		rd_id_ex => rd_id_ex,
 		rd_id_mem => rd_id_mem,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
@@ -321,7 +325,7 @@ begin
 		is_reg_write_wb => is_reg_write_wb,
 		rd_id_mem => rd_id_mem,
 		rd_id_wb => rd_id_wb,
-		clk => cpu_clk,
+		clk => inner_cpu_clk,
 		reset => reset
 	);
 
@@ -335,8 +339,8 @@ begin
 
 	cpu_clk_process :process(sub_clk)
 	begin
-		if sub_clk'event and sub_clk = '1' then
-			cpu_clk <= not cpu_clk;
+	   if sub_clk'event and sub_clk = '1' then
+			inner_cpu_clk <= not inner_cpu_clk;
 		end if;
 	end process;
 

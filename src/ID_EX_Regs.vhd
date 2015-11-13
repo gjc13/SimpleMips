@@ -85,6 +85,9 @@ begin
 			mem_op_code_ex <= mem_op_code_id;
 			is_mem_read_ex <= is_mem_read_id;
 			is_mem_write_ex <= is_mem_write_id;
+			is_reg_write_ex <= is_reg_write_id;
+			rs_id_ex <= rs_id_id;
+			rt_id_ex <= rt_id_id;
 			rd_id_ex <= rd_id_id;
 		end if;
 	end process;

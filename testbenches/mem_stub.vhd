@@ -57,15 +57,17 @@ architecture Behavioral of mem_stub is
 
 begin
 	process(w, r, reset)
-		variable ram: RamType := InitRamFromFile("ram.data");
+		variable ram: RamType := InitRamFromFile("test.data");
+		variable addr_masked : integer;
 	begin
+		addr_masked := to_integer(unsigned(addr) and X"000ff");
 		if reset = '1' then
 			data <= (others => 'Z');
 		elsif w = '1' and r = '0' then
-			ram(to_integer(unsigned(addr))) := data;
+			ram(addr_masked) := data;
 			data <= (others => 'Z');
 		elsif r = '1' and w = '0' then
-			data <= ram(to_integer(unsigned(addr)));
+			data <= ram(addr_masked);
 		else
 			data <= (others => 'Z');
 		end if;

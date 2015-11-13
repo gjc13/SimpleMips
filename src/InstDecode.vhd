@@ -33,8 +33,7 @@ use work.Definitions.ALL;
 
 entity InstDecode is
     Port (  inst : in  STD_LOGIC_VECTOR (31 downto 0);
-			l_is_mem_read : in  STD_LOGIC;
-			l_is_mem_write : in  STD_LOGIC;
+			npc : in STD_LOGIC_VECTOR (31 downto 0);
 			is_jump : out  STD_LOGIC;
 			jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
 			is_jr 	: out  STD_LOGIC;
@@ -57,232 +56,254 @@ end InstDecode;
 architecture Behavioral of InstDecode is
 begin
 
-	process(inst, l_is_mem_read, l_is_mem_write)
+	process(inst)
 		variable op_code : integer range 0 to 63;
 		variable funct : integer range 0 to 63;
 		variable rt_id_inst : integer range 0 to 127;
 		variable rd_id_inst : integer range 0 to 127;
 		variable shamt : std_logic_vector(4 downto 0);
+		variable npc_masked : std_logic_vector(31 downto 0);
 	begin
 		op_code := to_integer(unsigned(inst(31 downto 26)));
 		rt_id_inst := to_integer(unsigned(inst(20 downto 16)));
 		rd_id_inst := to_integer(unsigned(inst(15 downto 11)));
 		funct := to_integer(unsigned(inst(5 downto 0))); 
-		if l_is_mem_read = '1' or l_is_mem_write = '1' then
-			is_branch <= '0';
-			is_reg_inst <= '0';
-			is_mem_read <= '0';
-			is_mem_write <= '0';
-			alu_opcode <= ALU_NONE;
-			is_reg_write <= '0';
-		else
-			case op_code is
-				when 0 => 	--nop, jr, jalr, addu, slt, 
-					case funct is 
-						when 0 => --nop
-							is_jump <= '0';
-							is_branch <= '0';
-							is_reg_inst <= '1';
-							is_mem_read <= '0';
-							is_mem_write <= '0';
-							is_reg_write <= '0';
-							is_link <= '0';
-							alu_opcode <= ALU_NONE;
-						when 8 => --jr
-							is_jump <= '1';
-							is_jr <= '1';
-							is_jl <= '0';
-							is_link <= '0';
-							is_branch <= '0';
-							is_reg_inst <= '1';
-							is_mem_read <= '0';
-							is_mem_write <= '0';
-							is_reg_write <= '0';
-							alu_opcode <= ALU_ADD;
-						when 9 => --jalr
-							is_jump <= '1';
-							is_jr <= '1';
-							is_jl <= '1';
-							is_link <= '1';
-							is_branch <= '0';
-							is_reg_inst <= '1';
-							is_mem_read <= '0';
-							is_mem_write <= '0';
-							is_reg_write <= '1';
-							alu_opcode <= ALU_ADD;
-							rd_id <= rd_id_inst;
-						when 33 => --addu
-							is_jump <= '0';
-							is_branch <= '0';
-							is_link <= '0';
-							is_reg_inst <= '1';
-							is_mem_read <= '0';
-							is_mem_write <= '0';
-							is_reg_write <= '1';
-							alu_opcode <= ALU_ADD;
-							rd_id <= rd_id_inst;
-						when 42 => --slt
-							is_jump <= '0';
-							is_branch <= '0';
-							is_link <= '0';
-							is_reg_inst <= '1';
-							is_mem_read <= '0';
-							is_mem_write <= '0';
-							is_reg_write <= '1';
-							alu_opcode <= ALU_LS;
-							rd_id <= rd_id_inst;
-						when others => NULL;
-					end case;
+		npc_masked := npc and X"F0000000";
+		case op_code is
+			when 0 => 	--nop, jr, jalr, addu, slt, 
+				case funct is 
+					when 0 => --nop
+						is_jump <= '0';
+						is_jr <= '0';
+						is_branch <= '0';
+						is_reg_inst <= '1';
+						is_mem_read <= '0';
+						is_mem_write <= '0';
+						is_reg_write <= '0';
+						is_link <= '0';
+						alu_opcode <= ALU_NONE;
+					when 8 => --jr
+						is_jump <= '1';
+						is_jr <= '1';
+						is_jl <= '0';
+						is_link <= '0';
+						is_branch <= '0';
+						is_reg_inst <= '1';
+						is_mem_read <= '0';
+						is_mem_write <= '0';
+						is_reg_write <= '0';
+						alu_opcode <= ALU_ADD;
+					when 9 => --jalr
+						is_jump <= '1';
+						is_jr <= '1';
+						is_jl <= '1';
+						is_link <= '1';
+						is_branch <= '0';
+						is_reg_inst <= '1';
+						is_mem_read <= '0';
+						is_mem_write <= '0';
+						is_reg_write <= '1';
+						immediate <= X"00000000";
+						alu_opcode <= ALU_ADD;
+						rd_id <= rd_id_inst;
+					when 33 => --addu
+						is_jump <= '0';
+						is_jr <= '0';
+						is_branch <= '0';
+						is_link <= '0';
+						is_reg_inst <= '1';
+						is_mem_read <= '0';
+						is_mem_write <= '0';
+						is_reg_write <= '1';
+						alu_opcode <= ALU_ADD;
+						rd_id <= rd_id_inst;
+					when 42 => --slt
+						is_jump <= '0';
+						is_jr <= '0';
+						is_branch <= '0';
+						is_link <= '0';
+						is_reg_inst <= '1';
+						is_mem_read <= '0';
+						is_mem_write <= '0';
+						is_reg_write <= '1';
+						alu_opcode <= ALU_LS;
+						rd_id <= rd_id_inst;
+					when others => NULL;
+				end case;
 
-				when 1 => --bgez
-					is_jump <= '0';
-					is_branch <= '1';
-					is_link <= '0';
-					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-					branch_opcode <= B_GE;
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_NONE;
-					is_reg_write <= '0';
+			when 1 => --bgez
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '1';
+				is_link <= '0';
+				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				branch_opcode <= B_GE;
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_NONE;
+				is_reg_write <= '0';
+			when 3 => --jal
+				is_jump <= '1';
+				is_jr <= '0';
+				is_jl <= '1';
+				is_link <= '1';
+				is_branch <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				is_reg_write <= '1';
+				alu_opcode <= ALU_ADD;
+				jump_pc <= npc_masked or std_logic_vector(resize(unsigned(inst(25 downto 0) & "00"), jump_pc'length));
+				rd_id <= 31;
+				
+			when 4 => --beq
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '1';
+				is_link <= '0';
+				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				branch_opcode <= B_EQ;
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_NONE;
+				is_reg_write <= '0';
 
-				when 4 => --beq
-					is_jump <= '0';
-					is_branch <= '1';
-					is_link <= '0';
-					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-					branch_opcode <= B_EQ;
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_NONE;
-					is_reg_write <= '0';
+			when 5 => --bne
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '1';
+				is_link <= '0';
+				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				branch_opcode <= B_NE;
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_NONE;
+				is_reg_write <= '0';
 
-				when 5 => --bne
-					is_jump <= '0';
-					is_branch <= '1';
-					is_link <= '0';
-					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-					branch_opcode <= B_NE;
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_NONE;
-					is_reg_write <= '0';
+			when 6 => --blez
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '1';
+				is_link <= '0';
+				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				branch_opcode <= B_LE;
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_NONE;
+				is_reg_write <= '0';
 
-				when 6 => --blez
-					is_jump <= '0';
-					is_branch <= '1';
-					is_link <= '0';
-					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-					branch_opcode <= B_LE;
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_NONE;
-					is_reg_write <= '0';
+			when 7 => --bgtz
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '1';
+				is_link <= '0';
+				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				branch_opcode <= B_G;
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_NONE;
+				is_reg_write <= '0';
 
-				when 7 => --bgtz
-					is_jump <= '0';
-					is_branch <= '1';
-					is_link <= '0';
-					branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-					branch_opcode <= B_G;
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_NONE;
-					is_reg_write <= '0';
+			when 9 => --addiu
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_ADD;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
 
-				when 9 => --addiu
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_ADD;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+			when 12 => --andi
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_AND;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= X"0000" & inst(15 downto 0);
 
-				when 12 => --andi
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_AND;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= X"0000" & inst(15 downto 0);
+			when 13 => --ori
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_OR;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= X"0000" & inst(15 downto 0);
 
-				when 13 => --ori
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_OR;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= X"0000" & inst(15 downto 0);
+			when 15 => --lui
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_ADD;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= inst(15 downto 0) & X"0000";
 
-				when 15 => --lui
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_ADD;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= inst(15 downto 0) & X"0000";
+			when 32 => --lb
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '1';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_ADD;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+				mem_opcode <= MEM_BS;
 
-				when 32 => --lb
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '1';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_ADD;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
-					mem_opcode <= MEM_BS;
+			when 35 => --lw
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '1';
+				is_mem_write <= '0';
+				alu_opcode <= ALU_ADD;
+				is_reg_write <= '1';
+				rd_id <= rt_id_inst;
+				immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+				mem_opcode <= MEM_W;
 
-				when 35 => --lw
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '1';
-					is_mem_write <= '0';
-					alu_opcode <= ALU_ADD;
-					is_reg_write <= '1';
-					rd_id <= rt_id_inst;
-					immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
-					mem_opcode <= MEM_W;
+			when 43 => --sw
+				is_jump <= '0';
+				is_jr <= '0';
+				is_branch <= '0';
+				is_link <= '0';
+				is_reg_inst <= '0';
+				is_mem_read <= '0';
+				is_mem_write <= '1';
+				alu_opcode <= ALU_ADD;
+				is_reg_write <= '0';
+				immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+				mem_opcode <= MEM_W;
 
-				when 43 => --sw
-					is_jump <= '0';
-					is_branch <= '0';
-					is_link <= '0';
-					is_reg_inst <= '0';
-					is_mem_read <= '0';
-					is_mem_write <= '1';
-					alu_opcode <= ALU_ADD;
-					is_reg_write <= '0';
-					immediate <= std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
-					mem_opcode <= MEM_W;
-
-				when others => NULL;
-			end case;
-		end if;
+			when others => NULL;
+		end case;
 	end process;
 
 end Behavioral;

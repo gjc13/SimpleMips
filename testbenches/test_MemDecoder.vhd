@@ -84,21 +84,21 @@ ARCHITECTURE behavior OF test_MemDecoder IS
 	end component;
 
 	COMPONENT mem_stub 
-    Port (   addr : in  STD_LOGIC_VECTOR (19 downto 0);
-            data : inout  STD_LOGIC_VECTOR (31 downto 0);
-				r : in STD_LOGIC;
-            w : in  STD_LOGIC;
-				reset : in STD_LOGIC);
+    Port (  addr : in  STD_LOGIC_VECTOR (19 downto 0);
+			data : inout  STD_LOGIC_VECTOR (31 downto 0);
+			r : in STD_LOGIC;
+			w : in  STD_LOGIC;
+			reset : in STD_LOGIC);
 	end component;
 
 	COMPONENT serial_stub
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
-				data : inout  STD_LOGIC_VECTOR(31 downto 0);
-				intr : in  STD_LOGIC;
-				w : in  STD_LOGIC;
-				r : in STD_LOGIC;
-				clk : in STD_LOGIC;
-				reset : in STD_LOGIC);
+			data : inout  STD_LOGIC_VECTOR(31 downto 0);
+			intr : in  STD_LOGIC;
+			w : in  STD_LOGIC;
+			r : in STD_LOGIC;
+			clk : in STD_LOGIC;
+			reset : in STD_LOGIC);
 	end component;
 
 	--Inputs

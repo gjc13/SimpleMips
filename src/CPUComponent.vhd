@@ -66,8 +66,7 @@ package CPUComponent is
 
 	component InstDecode
     Port (  inst : in  STD_LOGIC_VECTOR (31 downto 0);
-			l_is_mem_read : in  STD_LOGIC;
-			l_is_mem_write : in  STD_LOGIC;
+			npc : in STD_LOGIC_VECTOR (31 downto 0);
 			is_jump : out  STD_LOGIC;
 			jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
 			is_jr 	: out  STD_LOGIC;
@@ -137,10 +136,10 @@ package CPUComponent is
 			immediate_ex : out  STD_LOGIC_VECTOR (31 downto 0);
 			is_reg_inst_id : in  STD_LOGIC;
 			is_reg_inst_ex : out  STD_LOGIC;
-			shift_amount_id : integer range 0 to 31;
-			shift_amount_ex : integer range 0 to 31;
-			alu_op_code_id : integer range 0 to 15;
-			alu_op_code_ex : integer range 0 to 15;
+			shift_amount_id : in integer range 0 to 31;
+			shift_amount_ex : out integer range 0 to 31;
+			alu_op_code_id : in integer range 0 to 15;
+			alu_op_code_ex : out integer range 0 to 15;
 			is_link_id : in  STD_LOGIC;
 			is_link_ex : out  STD_LOGIC;
 			mem_op_code_id : in  integer range 0 to 7;
