@@ -43,12 +43,14 @@ entity DataByPass is
            l_result : in  STD_LOGIC_VECTOR (31 downto 0);
            ll_result : in  STD_LOGIC_VECTOR (31 downto 0);
            lhs : out  STD_LOGIC_VECTOR (31 downto 0);
-           rhs : out  STD_LOGIC_VECTOR (31 downto 0));
+           rhs : out  STD_LOGIC_VECTOR (31 downto 0);
+			  rt_final : out STD_LOGIC_VECTOR (31 downto 0));
 end DataByPass;
 
 architecture Behavioral of DataByPass is
 	signal selected_rt : std_logic_vector(31 downto 0);
 begin
+	rt_final <= selected_rt;
 	process (rs_id, l_is_reg_write, ll_is_reg_write, l_rd_id, ll_rd_id, rs, l_result, ll_result)
 	begin
 		if (l_is_reg_write = '1' and l_rd_id /= 0 and l_rd_id = rs_id) then

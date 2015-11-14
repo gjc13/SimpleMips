@@ -19,7 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -51,14 +51,7 @@ begin
 		elsif (clk'event and clk = '1') then
 			if (w = '1' and r = '0') then
 				if (addr = X"00000000") then
-					for i in 0 to 31 loop
-						if (data(i) = '1') then
-							s(32-i):= '1';
-						else
-							s(32-i):= '0';
-						end if;
-					end loop;
-					report("value of data is " & s);
+					report("[Serial]" & character'val(to_integer(unsigned(data)))); 
 				end if;
 				data <= (others => 'Z');
 			elsif (r = '1' and w = '0') then

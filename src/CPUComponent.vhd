@@ -174,7 +174,8 @@ package CPUComponent is
 			l_result : in  STD_LOGIC_VECTOR (31 downto 0);
 			ll_result : in  STD_LOGIC_VECTOR (31 downto 0);
 			lhs : out  STD_LOGIC_VECTOR (31 downto 0);
-			rhs : out  STD_LOGIC_VECTOR (31 downto 0));
+			rhs : out  STD_LOGIC_VECTOR (31 downto 0);
+			rt_final : out STD_LOGIC_VECTOR (31 downto 0));
 	end component;
 
 	component alu

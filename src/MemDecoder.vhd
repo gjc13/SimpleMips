@@ -91,7 +91,7 @@ begin
 	-- the address bus and control enable bus drive logic
 	process(addr)
 	begin
-		if (addr = X"bfd00000" or addr = X"bfd00004") then
+		if (addr = X"bfd003f8" or addr = X"bfd003fc") then
 			visit_type <= SYNC;
 			addr_bus <= addr;
 		elsif (unsigned(addr) >= KSEG0_LO and unsigned(addr) < KSEG0_HI) then

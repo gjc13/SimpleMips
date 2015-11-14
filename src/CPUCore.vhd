@@ -101,6 +101,7 @@ architecture Behavioral of CPUCore is
 	signal alu_lhs : std_logic_vector(31 downto 0);
 	signal alu_rhs : std_logic_vector(31 downto 0);
 	signal alu_result : std_logic_vector(31 downto 0);
+	signal rt_ex_final : std_logic_vector(31 downto 0);
 	signal result_ex : std_logic_vector(31 downto 0);
 	--consider is_cancel signal in ex phase
 	signal is_mem_read_ex_final : std_logic;
@@ -182,7 +183,7 @@ begin
 
 	branch_bypass : BranchByPass Port Map(
 		rs => rs_data_id,
-		rt => rs_data_id,
+		rt => rt_data_id,
 		immediate => immediate_id,
 		l_result => result_ex,
 		ll_result => result_mem,
@@ -256,7 +257,8 @@ begin
 		l_result => result_mem_final,
 		ll_result => result_wb,
 		lhs => alu_lhs,
-		rhs => alu_rhs
+		rhs => alu_rhs,
+		rt_final => rt_ex_final
 	);
 
 	reg : RegFile Port Map(
@@ -282,7 +284,7 @@ begin
 	ex_mem : EX_MEM_Regs Port Map(
 		result_ex => result_ex,
 		result_mem => result_mem,
-		rt_ex => rt_ex,
+		rt_ex => rt_ex_final,
 		rt_mem => rt_mem,
 		mem_op_code_ex => mem_op_code_ex,
 		mem_op_code_mem => mem_op_code_mem,

@@ -73,6 +73,7 @@ begin
 			is_reg_write_ex <= '0';
 			is_mem_write_ex <= '0';
 			is_mem_read_ex <= '0';
+			is_link_ex <= '0';
 		elsif(clk'event and clk = '1') then
 			npc_ex <= npc_id;
 			rs_ex <= rs_data_id;

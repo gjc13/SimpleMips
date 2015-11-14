@@ -22,6 +22,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_TEXTIO.ALL;
 use STD.TEXTIO.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use work.Utilities.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -41,7 +42,7 @@ entity mem_stub is
 end mem_stub;
 
 architecture Behavioral of mem_stub is
-	type RamType is array(0 to 2**8-1) of STD_LOGIC_VECTOR(31 downto 0);
+	type RamType is array(0 to 2**14-1) of STD_LOGIC_VECTOR(31 downto 0);
 
 	impure function InitRamFromFile(RamFileName: in string) return RamType is
 		FILE ramFile : text is in RamFileName;
@@ -57,16 +58,18 @@ architecture Behavioral of mem_stub is
 
 begin
 	process(w, r, reset)
-		variable ram: RamType := InitRamFromFile("test.data");
+		variable ram: RamType := InitRamFromFile("lab0.data");
 		variable addr_masked : integer;
 	begin
-		addr_masked := to_integer(unsigned(addr) and X"000ff");
+		addr_masked := to_integer(unsigned(addr) and X"03fff");
 		if reset = '1' then
 			data <= (others => 'Z');
 		elsif w = '1' and r = '0' then
 			ram(addr_masked) := data;
 			data <= (others => 'Z');
 		elsif r = '1' and w = '0' then
+			--report "read memory";
+			--print_hex(ram(addr_masked));
 			data <= ram(addr_masked);
 		else
 			data <= (others => 'Z');

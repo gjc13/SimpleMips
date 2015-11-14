@@ -43,7 +43,7 @@ begin
 	process(addr_bus, r_bus, w_bus)
 	begin
 		addr_sram <= addr_bus(21 downto 2);
-		if(addr_bus = X"bfd00000" or addr_bus = X"bfd00004") then
+		if(addr_bus = X"bfd003f8" or addr_bus = X"bfd003fc") then
 			r_sram <= '0';
 			w_sram <= '0';
 		else 

@@ -137,6 +137,7 @@ begin
 				is_branch <= '1';
 				is_link <= '0';
 				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+				immediate <= X"00000000";
 				branch_opcode <= B_GE;
 				is_reg_inst <= '0';
 				is_mem_read <= '0';
@@ -164,7 +165,7 @@ begin
 				is_link <= '0';
 				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 				branch_opcode <= B_EQ;
-				is_reg_inst <= '0';
+				is_reg_inst <= '1';
 				is_mem_read <= '0';
 				is_mem_write <= '0';
 				alu_opcode <= ALU_NONE;
@@ -177,7 +178,7 @@ begin
 				is_link <= '0';
 				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 				branch_opcode <= B_NE;
-				is_reg_inst <= '0';
+				is_reg_inst <= '1';
 				is_mem_read <= '0';
 				is_mem_write <= '0';
 				alu_opcode <= ALU_NONE;
@@ -190,7 +191,7 @@ begin
 				is_link <= '0';
 				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 				branch_opcode <= B_LE;
-				is_reg_inst <= '0';
+				is_reg_inst <= '1';
 				is_mem_read <= '0';
 				is_mem_write <= '0';
 				alu_opcode <= ALU_NONE;
@@ -203,7 +204,7 @@ begin
 				is_link <= '0';
 				branch_offset <= std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
 				branch_opcode <= B_G;
-				is_reg_inst <= '0';
+				is_reg_inst <= '1';
 				is_mem_read <= '0';
 				is_mem_write <= '0';
 				alu_opcode <= ALU_NONE;

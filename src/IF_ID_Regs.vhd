@@ -48,8 +48,8 @@ begin
 			npc_id <= X"00000000";
 			inst_id <= X"00000000";
 		elsif(clk'event and clk = '1') then
-			report "inst_id";
-			print_hex(inst_if);
+			--report "inst_id";
+			--print_hex(inst_if);
 			npc_id <= npc_if;
 			inst_id <= inst_if;
 		end if;

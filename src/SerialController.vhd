@@ -42,11 +42,11 @@ architecture Behavioral of SerialController is
 begin
 	process(addr_bus, r_bus, w_bus)
 	begin
-		if(addr_bus = X"bfd00000") then
+		if(addr_bus = X"bfd003f8") then
 			r_serial <= r_bus;
 			w_serial <= w_bus;
 			addr_serial <= X"00000000";
-		elsif(addr_bus = X"bfd00004") then
+		elsif(addr_bus = X"bfd003fc") then
 			r_serial <= r_bus;
 			w_serial <= w_bus;
 			addr_serial <= X"00000004";

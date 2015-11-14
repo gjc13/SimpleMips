@@ -59,8 +59,8 @@ begin
 		if(reset = '1') then
 			pc <= START;
 		elsif(clk'event and clk = '1') then
-			report "pc:";
-			print_hex(pc_next);
+			--report "pc:";
+			--print_hex(pc_next);
 			pc <= pc_next;
 		end if;
 	end process;

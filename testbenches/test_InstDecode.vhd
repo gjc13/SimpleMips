@@ -193,6 +193,7 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert branch_offset = X"FFFFFFFC" report "branch_offset error" severity error;
 		assert branch_opcode = B_GE report "branch_opcode error" severity error;
+		assert immediate = X"00000000" report "immediate error" severity error;
 		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
@@ -208,7 +209,7 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert branch_offset = X"FFFFFFD0" report "branch_offset error" severity error;
 		assert branch_opcode = B_EQ report "branch_opcode error" severity error;
-		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
@@ -223,7 +224,7 @@ BEGIN
 		assert is_branch = '1' report "is_branch error" severity error;
 		assert branch_offset = X"00000030" report "branch_offset error" severity error;
 		assert branch_opcode = B_NE report "branch_opcode error" severity error;
-		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
@@ -238,7 +239,7 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert branch_offset = X"00000004" report "branch_offset error" severity error;
 		assert branch_opcode = B_LE report "branch_opcode error" severity error;
-		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
@@ -253,7 +254,7 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert branch_offset = X"FFFFFFF0" report "branch_offset error" severity error;
 		assert branch_opcode = B_G report "branch_opcode error" severity error;
-		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
