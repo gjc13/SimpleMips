@@ -120,12 +120,12 @@ begin
 				elsif (r = '1') then
 					next_r_bus <= '1';
 					next_w_bus <= '0';
-					next_data_bus <= (others => 'Z');
+					--next_data_bus <= (others => 'Z');
 				end if;
 			when READ1 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
+				--next_data_bus <= (others => 'Z');
 			when READ2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';

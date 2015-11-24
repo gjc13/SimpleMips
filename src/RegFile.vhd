@@ -38,6 +38,16 @@ entity RegFile is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
+			status_new : in STD_LOGIC_VECTOR (31 downto 0);
+			cause_new : in STD_LOGIC_VECTOR (31 downto 0);
+			badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
+			entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
+			exception_write : in STD_LOGIC;
+			status : out STD_LOGIC_VECTOR (31 downto 0);
+			cause : out STD_LOGIC_VECTOR (31 downto 0);
+			count : out STD_LOGIC_VECTOR (31 downto 0);
+			compare : out STD_LOGIC_VECTOR (31 downto 0);
+			ebase : out STD_LOGIC_VECTOR (31 downto 0);
 	   		clk : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end RegFile;
@@ -45,7 +55,40 @@ end RegFile;
 architecture Behavioral of RegFile is
 	type RegsType is array(0 to 127) of std_logic_vector(31 downto 0);
 	signal regs: RegsType;
+	signal count_clock: std_logic := '0';
+	constant ADD_VAL : unsigned := X"00000001";
+	constant INDEX : integer := 32;
+	constant ENTRY_LO0 : integer := 34;
+	constant ENTRY_LO1 : integer := 35;
+	constant BADVADDR : integer := 41;
+	constant COUNT : integer := 42;
+	constant ENTRYHI : integer := 43;
+	constant COMPARE : integer := 44;
+	constant STATUS : integer := 45;
+	constant CAUSE : integer := 47;
+	constant EPC : integer := 48;
+	constant EBASE : integer := 49;
 begin
+	status <= regs(STATUS);
+	cause <= regs(CAUSE);
+	count <= regs(COUNT);
+	compare <= regs(COMPARE);
+	ebase <= regs(EBASE);
+
+	process(clk)
+	begin
+		if(clk'event and clk = '1') then
+			count_clock <= not count_clock;
+		end if;
+	end process;
+
+	process(count_clock)
+	begin
+		if(count_clock'event and count_clock = '1') then
+			regs(COUNT) <= std_logic_vector(unsigned(count_clock) + ADD_VAL);
+		end if;
+	end process;
+
 	process(clk)
 	begin
 		if(clk'event and clk = '1') then
@@ -54,7 +97,7 @@ begin
 					regs(i) <= (others => '0');
 				end loop;
 			else
-				if(is_regwrite = '1' and rd_id /= 0) then
+				if(is_regwrite = '1' and rd_id /= 0 and rd_id /= 42) then
 					regs(rd_id) <= rd_data;
 				end if;
 			end if;
