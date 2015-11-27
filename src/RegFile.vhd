@@ -15,8 +15,7 @@
 -- Revision: 
 -- Revision 0.01 - File Created
 -- Additional Comments: 
---
-----------------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------------- library IEEE;
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -38,85 +37,123 @@ entity RegFile is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
-			status_new : in STD_LOGIC_VECTOR (31 downto 0);
-			cause_new : in STD_LOGIC_VECTOR (31 downto 0);
-			badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
-			entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
-			exception_write : in STD_LOGIC;
-			status : out STD_LOGIC_VECTOR (31 downto 0);
-			cause : out STD_LOGIC_VECTOR (31 downto 0);
-			count : out STD_LOGIC_VECTOR (31 downto 0);
-			compare : out STD_LOGIC_VECTOR (31 downto 0);
-			ebase : out STD_LOGIC_VECTOR (31 downto 0);
-	   		clk : in STD_LOGIC;
-			reset : in STD_LOGIC);
+            status_new : in STD_LOGIC_VECTOR (31 downto 0);
+            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
+            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
+            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
+            force_cp0_write : in STD_LOGIC;
+            status : out STD_LOGIC_VECTOR (31 downto 0);
+            cause : out STD_LOGIC_VECTOR (31 downto 0);
+            count : out STD_LOGIC_VECTOR (31 downto 0);
+            compare : out STD_LOGIC_VECTOR (31 downto 0);
+            ebase : out STD_LOGIC_VECTOR (31 downto 0);
+            epc : out STD_LOGIC_VECTOR(31 downto 0);
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
 end RegFile;
 
 architecture Behavioral of RegFile is
-	type RegsType is array(0 to 127) of std_logic_vector(31 downto 0);
-	signal regs: RegsType;
-	signal count_clock: std_logic := '0';
-	constant ADD_VAL : unsigned := X"00000001";
-	constant INDEX : integer := 32;
-	constant ENTRY_LO0 : integer := 34;
-	constant ENTRY_LO1 : integer := 35;
-	constant BADVADDR : integer := 41;
-	constant COUNT : integer := 42;
-	constant ENTRYHI : integer := 43;
-	constant COMPARE : integer := 44;
-	constant STATUS : integer := 45;
-	constant CAUSE : integer := 47;
-	constant EPC : integer := 48;
-	constant EBASE : integer := 49;
+    type RegsType is array(0 to 127) of std_logic_vector(31 downto 0);
+    signal regs: RegsType;
+    signal count_clock: std_logic := '0';
+    constant ADD_VAL : unsigned := X"00000001";
+    constant INDEX_I : integer := 32;
+    constant ENTRY_LO0_I : integer := 34;
+    constant ENTRY_LO1_I : integer := 35;
+    constant BADVADDR_I : integer := 41;
+    constant COUNT_I : integer := 42;
+    constant ENTRYHI_I : integer := 43;
+    constant COMPARE_I : integer := 44;
+    constant STATUS_I : integer := 45;
+    constant CAUSE_I : integer := 47;
+    constant EPC_I : integer := 48;
+    constant EBASE_I : integer := 49;
 begin
-	status <= regs(STATUS);
-	cause <= regs(CAUSE);
-	count <= regs(COUNT);
-	compare <= regs(COMPARE);
-	ebase <= regs(EBASE);
+    count <= regs(COUNT_I);
 
-	process(clk)
-	begin
-		if(clk'event and clk = '1') then
-			count_clock <= not count_clock;
-		end if;
-	end process;
+    process(clk)
+    begin
+        if(clk'event and clk = '1') then
+            count_clock <= not count_clock;
+        end if;
+    end process;
 
-	process(count_clock)
-	begin
-		if(count_clock'event and count_clock = '1') then
-			regs(COUNT) <= std_logic_vector(unsigned(count_clock) + ADD_VAL);
-		end if;
-	end process;
+    process(clk)
+    begin
+        if(clk'event and clk = '1') then
+            if(reset = '1') then
+                for i in regs'range loop
+                    if i = STATUS_I then
+                        -- BEV KX
+                        regs(i) <= X"00100080";
+                    else
+                        regs(i) <= (others => '0');
+                    end if;
+                end loop;
+            else
+                if count_clock = '1' then
+                    regs(COUNT_I) <= std_logic_vector(unsigned(regs(COUNT_I)) + ADD_VAL);
+                end if;
+                if force_cp0_write = '1' then
+                    regs(STATUS_I) <= status_new;
+                    regs(CAUSE_I) <= cause_new;
+                    regs(BADVADDR_I) <= badvaddr_new;
+                    regs(ENTRYHI_I) <= entry_hi_new;
+                    if (is_regwrite = '1' and rd_id /= 0 and rd_id < 32) then
+                        regs(rd_id) <= rd_data;
+                    end if;
+                else
+                    if (is_regwrite = '1' and rd_id /= 0 and rd_id /= COUNT_I) then
+                        regs(rd_id) <= rd_data;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+    
 
-	process(clk)
-	begin
-		if(clk'event and clk = '1') then
-			if(reset = '1') then
-				for i in regs'range loop
-					regs(i) <= (others => '0');
-				end loop;
-			else
-				if(is_regwrite = '1' and rd_id /= 0 and rd_id /= 42) then
-					regs(rd_id) <= rd_data;
-				end if;
-			end if;
-		end if;
-	end process;
+    process(rs_id, rt_id, rd_id, is_regwrite, rd_data, regs)
+    begin
+        if(is_regwrite = '1' and rd_id = rt_id) then
+            rt_data <= rd_data;
+        else
+            rt_data <= regs(rt_id);
+        end if;
+        if(is_regwrite = '1' and rd_id = rs_id) then
+            rs_data <= rd_data;
+        else
+            rs_data <= regs(rs_id);
+        end if;
+    end process;
 
-	process(rs_id, rt_id, rd_id, is_regwrite, rd_data)
-	begin
-		if(is_regwrite = '1' and rd_id = rt_id) then
-			rt_data <= rd_data;
-		else
-			rt_data <= regs(rt_id);
-		end if;
-		if(is_regwrite = '1' and rd_id = rs_id) then
-			rs_data <= rd_data;
-		else
-			rs_data <= regs(rs_id);
-		end if;
-	end process;
-	
+    process(rd_id, rd_data, is_regwrite, regs)
+    begin
+        if(is_regwrite = '1' and rd_id = STATUS_I) then
+            status <= rd_data;
+        else
+            status <= regs(STATUS_I);
+        end if;
+        if(is_regwrite = '1' and rd_id = CAUSE_I) then
+            cause <= rd_data;
+        else
+            cause <= regs(CAUSE_I);
+        end if;
+        if(is_regwrite = '1' and rd_id = COMPARE_I) then
+            compare <= rd_data;
+        else
+            compare <= regs(COMPARE_I);
+        end if;
+        if(is_regwrite = '1' and rd_id = EBASE_I) then
+            ebase <= rd_data;
+        else
+            ebase <= regs(EBASE_I);
+        end if;
+        if(is_regwrite = '1' and rd_id = EPC_I) then
+            epc <= rd_data;
+        else
+            epc <= regs(EPC_I);
+        end if;
+    end process;
+    
 end Behavioral;
 
