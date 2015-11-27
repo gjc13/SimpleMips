@@ -84,8 +84,8 @@ begin
             if(reset = '1') then
                 for i in regs'range loop
                     if i = STATUS_I then
-                        -- BEV KX
-                        regs(i) <= X"00100080";
+                        -- BEV KSU
+                        regs(i) <= X"00400010";
                     else
                         regs(i) <= (others => '0');
                     end if;

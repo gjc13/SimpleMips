@@ -22,7 +22,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use work.Utilities.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -31,6 +32,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity ExceptionDecoder is
     Port (  is_in_slot : in  STD_LOGIC;
+            victim_addr : in STD_LOGIC_VECTOR (31 downto 0);
 			mem_addr : in  STD_LOGIC_VECTOR (31 downto 0);
 			mem_r : in  STD_LOGIC;
 			mem_w : in  STD_LOGIC;
@@ -38,6 +40,7 @@ entity ExceptionDecoder is
 			cause_old : in  STD_LOGIC_VECTOR (31 downto 0);
 			epc_old : in  STD_LOGIC_VECTOR (31 downto 0);
 			entryhi_old : in  STD_LOGIC_VECTOR (31 downto 0);
+            ebase : in STD_LOGIC_VECTOR (31 downto 0);
 			is_intr : in  STD_LOGIC;
 			syscall_intr : in  STD_LOGIC;
 			clk_intr : in  STD_LOGIC;
@@ -68,23 +71,23 @@ architecture Behavioral of ExceptionDecoder is
 	signal next_is_cancel : std_logic;
 	signal need_intr : std_logic;
 
-	constant IE : natural := 0;
-	constant EXL : natural := 1;
-	--subtype MODE is natural range 7 downto 5;
-	constant KX : natural := 7;
-	constant SX : natural := 6;
-	constant UX : natural := 5;
+	constant IE : integer := 0;
+	constant EXL : integer := 1;
+	subtype KSU is integer range 4 downto 3;
 	constant BEV : integer := 22;
 
 	constant BD : integer := 31;
-	subtype IP is natural range 15 downto 8;
-	subtype EXCCODE is natural range 6 downto 2;
+	subtype IP is integer range 15 downto 8;
+	subtype EXCCODE is integer range 6 downto 2;
 
-	subtype VPN2 is natural range 31 downto 13;
+	subtype VPN2 is integer range 31 downto 13;
+
+    constant ROM_EBASE : unsigned := X"BFC00200";
+    constant BRANCH_OFFSET : unsigned := X"00000004";
 
 begin 
 	need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
-	force_cp0_write <= need_intr; 
+    force_cp0_write <= need_intr or is_eret; 
 	badvaddr_new <= mem_addr;
 
 	process(reset, clk)
@@ -98,11 +101,11 @@ begin
 		end if;
 	end process;
 
-	process(is_intr, pr_state)
+	process(need_intr, pr_state)
 	begin
 		case pr_state is 
 			when IDLE =>
-				if need_intr = '0' then
+				if need_intr = '1' then
 					next_state <= CANCEL1;
 					next_is_cancel <= '1';
 				else
@@ -127,20 +130,24 @@ begin
 		end if;
 	end process;
 
-	process(need_intr)
-		variable status : std_logic_vector(31 downto 0) := status_old;
+    process(need_intr, is_eret)
+		variable status : std_logic_vector(31 downto 0);
 	begin
+        status := status_old;
 		if need_intr = '1' then
-			status(KX) := '1';
-			status(UX) := '0';
+            status(KSU) := "00";
 			status(EXL) := '1';
+        elsif is_eret = '1' then
+            status(KSU) := "10";
+            status(EXL) := '0';
 		end if;
 		status_new <= status;
 	end process;
 
 	process(need_intr, is_in_slot, syscall_intr, clk_intr, com1_intr, dma_intr, ps2_intr, tlb_intr, ade_intr, mem_r, mem_w)
-		variable cause : std_logic_vector(31 downto 0) := cause_old;
+		variable cause : std_logic_vector(31 downto 0);
 	begin
+        cause := cause_old;
 		if need_intr = '1' then
 			cause(BD) := is_in_slot;
 			if tlb_intr = '1' then
@@ -155,8 +162,6 @@ begin
 				cause(EXCCODE) := "01000"; --SYSCALL
 			elsif ade_intr = '1' then
 				if mem_r = '0' and mem_w = '1' then
-					cause(EXCCODE) := "00100"; --ADES
-				elsif mem_r = '1' and mem_w = '0' then
 					cause(EXCCODE) := "00101"; --ADEL
 				end if;
 			elsif clk_intr = '1' then
@@ -177,13 +182,40 @@ begin
 	end process;
 
 	process(need_intr, tlb_intr, mem_r, mem_w)
-		variable entryhi : std_logic_vector(31 downto 0) := entryhi_old;
+		variable entryhi : std_logic_vector(31 downto 0);
 	begin
+        entryhi := entryhi_old;
 		if tlb_intr = '1' then
 			entryhi(VPN2) := mem_addr(VPN2);
 		end if;
 		entryhi_new <= entryhi;
 	end process;
+
+    process(status_old, epc_old, ebase, tlb_intr, is_eret)
+        variable offset : unsigned(31 downto 0);
+    begin
+        if tlb_intr = '0' then
+            offset := X"00000180";
+        else
+            offset := X"00000000";
+        end if;
+        if is_eret = '1' then
+            handler_addr <= epc_old;
+        elsif status_old(BEV) = '1' then
+            handler_addr <= std_logic_vector(offset + ROM_EBASE);
+        else
+            handler_addr <= std_logic_vector(offset + unsigned(ebase));
+        end if;
+    end process;
+
+    process(is_in_slot, victim_addr)
+    begin
+        if is_in_slot = '1' then
+            epc_new <= std_logic_vector(unsigned(victim_addr) - BRANCH_OFFSET);
+        else
+            epc_new <= victim_addr;
+        end if;
+    end process;
 
 end Behavioral;
 
