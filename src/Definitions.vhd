@@ -1,3 +1,6 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
 package Definitions is
 	constant ALU_NONE : INTEGER := 0;
 	constant ALU_ADD : INTEGER := 1;
@@ -24,5 +27,8 @@ package Definitions is
 	constant MEM_BS : INTEGER := 2;
 	constant MEM_HU : INTEGER := 3;
 	constant MEM_HS : INTEGER := 4;
+
+	constant START_ADDR : STD_LOGIC_VECTOR := X"80000000";
+	constant PRE_START_ADDR : STD_LOGIC_VECTOR := X"7FFFFFFC";
 
 end Definitions;

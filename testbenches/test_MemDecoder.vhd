@@ -224,19 +224,19 @@ BEGIN
 	   assert addr_bus = X"00000000" report "addr_bus error" severity error;
 	   assert data_bus = X"01234567" report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
-	   assert w_bus = '1' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
+	   assert w_bus = '0' report "w_bus error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
 	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
 	   assert addr_bus = X"00000000" report "addr_bus error" severity error;
-	   assert checkZ(data_bus) report "data_bus error" severity error;
+	   assert data_bus = X"01234567" report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
-	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert w_bus = '1' report "w_bus error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '0' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
@@ -245,8 +245,8 @@ BEGIN
 	   assert checkZ(data_bus) report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
@@ -256,8 +256,8 @@ BEGIN
 	   assert checkZ(data_bus) report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 	   r <= '1';
@@ -266,8 +266,18 @@ BEGIN
 	   assert addr_bus = X"00000000" report "addr_bus error" severity error;
 	   assert r_bus = '1' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
+	   assert r_sram = '0' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
+	   assert r_serial = '0' report "r_serial error" severity error;
+	   assert w_serial = '0' report "w_serial error" severity error;
+
+	   wait for 10 ns;
+	   assert addr_bus = X"00000000" report "addr_bus error" severity error;
+	   assert data_out = X"01234567" report "data_out error" severity error;
+	   assert r_bus = '0' report "r_bus error" severity error;
+	   assert w_bus = '0' report "w_bus error" severity error;
 	   assert r_sram = '1' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
@@ -276,18 +286,8 @@ BEGIN
 	   assert data_out = X"01234567" report "data_out error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
-	   assert r_serial = '0' report "r_serial error" severity error;
-	   assert w_serial = '0' report "w_serial error" severity error;
-
-	   wait for 10 ns;
-	   assert addr_bus = X"00000000" report "addr_bus error" severity error;
-	   assert data_out = X"01234567" report "data_out error" severity error;
-	   assert r_bus = '0' report "r_bus error" severity error;
-	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
@@ -299,139 +299,140 @@ BEGIN
 	   assert data_out = X"01234567" report "data_out error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   r <= '0';
 	   w <= '1';
 	   data_in <= X"FFFFFFFF";
-	   addr <= X"bfd00000";
+	   addr <= X"bfd003f8";
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert data_bus = X"FFFFFFFF" report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
-	   assert w_bus = '1' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
-	   assert r_serial = '0' report "r_serial error" severity error;
-	   assert w_serial = '1' report "w_serial error" severity error;
-
-	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
-	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
-	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
+	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
+		assert data_bus = X"FFFFFFFF" report "data_bus error" severity error;
+	   assert r_bus = '0' report "r_bus error" severity error;
+	   assert w_bus = '1' report "w_bus error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
+	   assert r_serial = '0' report "r_serial error" severity error;
+	   assert w_serial = '1' report "w_serial error" severity error;
+
+	   wait for 10 ns;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert checkZ(data_bus) report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 
 	   report "test read serial data"; 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert checkZ(data_bus) report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   r <= '1';
 	   w <= '0';
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert r_bus = '1' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '1' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert data_bus = X"00000031" report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert data_out = X"00000031" report "data_out error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 
 	   report "test read setial state";
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00000" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003f8" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000000" report "addr_serial error" severity error;
 	   assert checkZ(data_bus) report "data_bus error" severity error;
 	   assert data_out = X"00000031" report "data_out error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
-	   addr <= X"bfd00004";
+	   addr <= X"bfd003fc";
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00004" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003fc" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000004" report "addr_serial error" severity error;
 	   assert r_bus = '1' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '1' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00004" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003fc" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000004" report "addr_serial error" severity error;
 	   assert data_bus = X"00000001" report "data_bus error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 
 	   wait for 10 ns;
-	   assert addr_bus = X"bfd00004" report "addr_bus error" severity error;
+	   assert addr_bus = X"bfd003fc" report "addr_bus error" severity error;
 	   assert addr_serial = X"00000004" report "addr_serial error" severity error;
 	   assert data_out = X"00000001" report "data_out error" severity error;
 	   assert r_bus = '0' report "r_bus error" severity error;
 	   assert w_bus = '0' report "w_bus error" severity error;
-	   assert r_sram = '0' report "r_sram error" severity error;
-	   assert w_sram = '0' report "w_serial error" severity error;
+	   assert r_sram = '1' report "r_sram error" severity error;
+	   assert w_sram = '1' report "w_sram error" severity error;
 	   assert r_serial = '0' report "r_serial error" severity error;
 	   assert w_serial = '0' report "w_serial error" severity error;
 		

@@ -115,17 +115,17 @@ begin
 					next_data_bus <= (others => 'Z');
 				elsif (w = '1') then
 					next_r_bus <= '0';
-					next_w_bus <= '1';
+					next_w_bus <= '0';
 					next_data_bus <= data_in;
 				elsif (r = '1') then
 					next_r_bus <= '1';
 					next_w_bus <= '0';
-					next_data_bus <= (others => 'Z');
+					--next_data_bus <= (others => 'Z');
 				end if;
 			when READ1 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
+				--next_data_bus <= (others => 'Z');
 			when READ2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
@@ -136,8 +136,8 @@ begin
 				next_data_bus <= (others => 'Z');
 			when WRITE1 =>
 				next_r_bus <= '0';
-				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
+				next_w_bus <= '1';
+				next_data_bus <= data_in;
 			when WRITE2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';

@@ -44,11 +44,11 @@ begin
 	begin
 		addr_sram <= addr_bus(21 downto 2);
 		if(addr_bus = X"bfd003f8" or addr_bus = X"bfd003fc") then
-			r_sram <= '0';
-			w_sram <= '0';
+			r_sram <= '1';
+			w_sram <= '1';
 		else 
-			r_sram <= r_bus;
-			w_sram <= w_bus;
+			r_sram <= not r_bus;
+			w_sram <= not w_bus;
 		end if;
 	end process;
 

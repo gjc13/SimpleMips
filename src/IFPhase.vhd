@@ -23,6 +23,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 use work.Utilities.all;
+use work.Definitions.all;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -44,7 +45,7 @@ entity IFPhase is
 end IFPhase;
 
 architecture Behavioral of IFPhase is
-	constant START : std_logic_vector(31 downto 0) := X"7FFFFFFC";
+	constant START : std_logic_vector(31 downto 0) := PRE_START_ADDR;
 	constant PC_MOVE : unsigned := X"00000004";
 	signal pc: std_logic_vector(31 downto 0);
 	signal pc_next: std_logic_vector (31 downto 0);

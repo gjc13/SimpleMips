@@ -64,10 +64,10 @@ begin
 		addr_masked := to_integer(unsigned(addr) and X"03fff");
 		if reset = '1' then
 			data <= (others => 'Z');
-		elsif w = '1' and r = '0' then
+		elsif w = '0' and r = '1' then
 			ram(addr_masked) := data;
 			data <= (others => 'Z');
-		elsif r = '1' and w = '0' then
+		elsif r = '0' and w = '1' then
 			--report "read memory";
 			--print_hex(ram(addr_masked));
 			data <= ram(addr_masked);

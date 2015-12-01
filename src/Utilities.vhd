@@ -6,6 +6,7 @@ use IEEE.STD_LOGIC_TEXTIO.all;
 package Utilities is
 function to_std_logic(L: BOOLEAN) return std_logic;
 procedure print_hex(data : std_logic_vector(31 downto 0));
+procedure report_std_logic(l : std_logic);
 end Utilities;
 
 package body Utilities is
@@ -22,4 +23,13 @@ package body Utilities is
 		hwrite(debugline, data);
 		writeline(OUTPUT, debugline);
 	end procedure print_hex;
+    
+    procedure report_std_logic(l :  std_logic) is
+	begin
+        if l = '1' then
+            report "1";
+        else
+            report "0";
+        end if;
+	end procedure report_std_logic;
 end Utilities;
