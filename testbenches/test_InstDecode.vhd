@@ -69,12 +69,12 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: InstDecode PORT MAP (
           inst => inst,
-			 npc => npc,
+          npc => npc,
           is_jump => is_jump,
           jump_pc => jump_pc,
           is_jr => is_jr,
           is_jl => is_jl,
-			 is_link => is_link,
+          is_link => is_link,
           is_branch => is_branch,
           branch_offset => branch_offset,
           branch_opcode => branch_opcode,
@@ -100,7 +100,6 @@ BEGIN
 		assert is_jump = '0' report "is_jump error" severity error;
 		assert is_branch = '0' report "is_branch error" severity error;
 		assert is_link = '0' report "is_link error" severity error;
-		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
 		assert is_reg_write = '0' report "is_reg_write error" severity error;

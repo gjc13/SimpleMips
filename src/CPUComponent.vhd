@@ -11,22 +11,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
 package CPUComponent is
-    component MemDecoder
-    port(
-         addr : IN  std_logic_vector(31 downto 0);
-         r : IN  std_logic;
-         w : IN  std_logic;
-         data_in : IN  std_logic_vector(31 downto 0);
-         data_out : OUT  std_logic_vector(31 downto 0);
-         addr_bus : OUT  std_logic_vector(31 downto 0);
-         r_bus : OUT  std_logic;
-         w_bus : OUT  std_logic;
-         data_bus : INOUT  std_logic_vector(31 downto 0);
-         reset : IN  std_logic;
-         clk : IN  std_logic;
-         cpu_clk : IN  std_logic);
-    end component;
-
     component MemConflictSolver
     port (  r_pc : in  STD_LOGIC;
             w_pc : in  STD_LOGIC;
@@ -233,6 +217,7 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
+<<<<<<< HEAD
     
     component ExceptionDecoder is
     Port (  is_in_slot : in  STD_LOGIC;
@@ -267,6 +252,8 @@ package CPUComponent is
             reset : in STD_LOGIC);
     end component;
 
+=======
+>>>>>>> fpga-port
 end CPUComponent;
 
 package body CPUComponent is

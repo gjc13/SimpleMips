@@ -125,7 +125,7 @@ architecture Behavioral of CPUCore is
 	
 	constant LINK_OFFSET : unsigned := X"00000004";
 begin
-   cpu_clk <= inner_cpu_clk;
+    cpu_clk <= inner_cpu_clk;
 	rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
 	rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
 	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
@@ -134,13 +134,13 @@ begin
 	is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
 	is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
 	data_core <= rt_mem;
-	result_mem_final <= data_mem when is_mem_read_mem = '1' else result_mem;
+	result_mem_final <= data_masked when is_mem_read_mem = '1' else result_mem;
 
 	if_phase: IFPhase Port Map(
 		is_bubble => is_bubble,
 		need_branch => need_branch,
 		branch_pc => branch_pc,
-		data_mem => data_mem,
+		data_mem => data_masked,
 		addr_pc => addr_pc,
 		r_pc => r_pc,
 		w_pc => w_pc,
@@ -288,11 +288,11 @@ begin
 		rt_mem => rt_mem,
 		mem_op_code_ex => mem_op_code_ex,
 		mem_op_code_mem => mem_op_code_mem,
-		is_mem_read_ex => is_mem_read_ex,
+		is_mem_read_ex => is_mem_read_ex_final,
 		is_mem_read_mem => is_mem_read_mem,
-		is_mem_write_ex => is_mem_write_ex,
+		is_mem_write_ex => is_mem_write_ex_final,
 		is_mem_write_mem => is_mem_write_mem,
-		is_reg_write_ex => is_reg_write_ex,
+		is_reg_write_ex => is_reg_write_ex_final,
 		is_reg_write_mem => is_reg_write_mem,
 		rd_id_ex => rd_id_ex,
 		rd_id_mem => rd_id_mem,

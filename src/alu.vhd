@@ -64,7 +64,7 @@ begin
 			when ALU_LU =>
 				result <= (0 => to_std_logic(unsigned(lhs) < unsigned(rhs)), others => '0');
 			when others =>
-				null;
+				result <= X"00000000";
 		end case;
 	end process;
 end Behavioral;

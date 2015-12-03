@@ -154,6 +154,5 @@ begin
             epc <= regs(EPC_I);
         end if;
     end process;
-    
 end Behavioral;
 
