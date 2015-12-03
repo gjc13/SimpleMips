@@ -118,6 +118,9 @@ begin
             when CANCEL2 => 
                 next_state <= IDLE;
                 next_is_cancel <= '0';
+            when others =>
+                next_state <= IDLE;
+                next_is_cancel <= '0';
         end case;
     end process;
 
