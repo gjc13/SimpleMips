@@ -31,7 +31,8 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 entity serial_stub is
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
-			data : inout  STD_LOGIC_VECTOR(31 downto 0);
+			data_in : in  STD_LOGIC_VECTOR(31 downto 0);
+			data_out : out  STD_LOGIC_VECTOR(31 downto 0);
 			intr : in  STD_LOGIC;
 			w : in  STD_LOGIC;
 			r : in STD_LOGIC;
@@ -47,21 +48,21 @@ begin
 	variable s: String(1 to 32);
 	begin
 		if (reset = '1') then
-			data <= (others => 'Z');
+			data_out <= (others => 'Z');
 		elsif (clk'event and clk = '1') then
 			if (w = '1' and r = '0') then
 				if (addr = X"00000000") then
-					report("[Serial]" & character'val(to_integer(unsigned(data)))); 
+					report("[Serial]" & character'val(to_integer(unsigned(data_in)))); 
 				end if;
-				data <= (others => 'Z');
+				data_out <= (others => 'Z');
 			elsif (r = '1' and w = '0') then
 				if (addr = X"00000000") then
-					data <= X"00000031";
+					data_out <= X"00000031";
 				elsif (addr = X"00000004") then
-					data <= X"00000001";
+					data_out <= X"00000001";
 				end if;
 			else
-				data <= (others => 'Z');
+				data_out <= (others => 'Z');
 			end if;
 		end if;
 	end process;

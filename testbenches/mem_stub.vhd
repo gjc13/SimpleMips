@@ -36,9 +36,9 @@ use work.Utilities.all;
 entity mem_stub is
     Port (  addr : in  STD_LOGIC_VECTOR (19 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
-			   r : in STD_LOGIC;
+			r : in STD_LOGIC;
             w : in  STD_LOGIC;
-			   reset : in STD_LOGIC);
+			reset : in STD_LOGIC);
 end mem_stub;
 
 architecture Behavioral of mem_stub is
@@ -64,10 +64,12 @@ begin
 		addr_masked := to_integer(unsigned(addr) and X"03fff");
 		if reset = '1' then
 			data <= (others => 'Z');
-		elsif w = '1' and r = '0' then
+		elsif w = '0' and r = '1' then
+			--report "write memory";
+			--print_hex(ram(addr_masked));
 			ram(addr_masked) := data;
 			data <= (others => 'Z');
-		elsif r = '1' and w = '0' then
+		elsif r = '0' and w = '1' then
 			--report "read memory";
 			--print_hex(ram(addr_masked));
 			data <= ram(addr_masked);

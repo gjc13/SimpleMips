@@ -51,7 +51,8 @@ begin
 				data_out <= std_logic_vector(resize(unsigned(data_in(15 downto 0)), data_out'length));
 			when MEM_HS =>
 				data_out <= std_logic_vector(resize(signed(data_in(15 downto 0)), data_out'length));
-			when others => NULL;
+			when others => 
+                data_out <= X"00000000";
 		end case;
 	end process;
 end Behavioral;

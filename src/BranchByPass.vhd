@@ -69,7 +69,7 @@ begin
 			lhs <= l_result;
 		elsif (ll_is_reg_write = '1' and ll_rd_id /= 0 and ll_rd_id = rs_id) then
 			lhs <= ll_result;
-		elsif (lll_is_reg_write = '1' and ll_rd_id /= 0 and ll_rd_id = rs_id) then
+		elsif (lll_is_reg_write = '1' and lll_rd_id /= 0 and lll_rd_id = rs_id) then
 			lhs <= lll_result;
 		else
 			lhs <= rs;
@@ -108,7 +108,7 @@ begin
 			when B_GE => compare_result <= to_std_logic(signed(lhs) >= signed(rhs));
 			when B_L => compare_result <= to_std_logic(signed(lhs) < signed(rhs));
 			when B_LE => compare_result <= to_std_logic(signed(lhs) <= signed(rhs));
-			when others => NULL;
+			when others => compare_result <= '0';
 		end case;
 	end process;
 

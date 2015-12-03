@@ -30,11 +30,26 @@ USE ieee.std_logic_1164.ALL;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL; 
-ENTITY test_cpu IS
-END test_cpu;
- 
-ARCHITECTURE behavior OF test_cpu IS 
- 
+
+ENTITY top_cpu IS
+    port(clk:in std_logic;
+        rst : in std_logic;
+
+        --sram
+        addr_sram:out std_logic_vector(19 downto 0);
+        data_bus:inout std_logic_vector(31 downto 0);
+        ce: out std_logic;
+        oe: out std_logic;
+        we: out std_logic;
+
+        --serial
+        RX:in std_logic;
+        TX:out std_logic
+    );
+END top_cpu;
+
+
+ARCHITECTURE behavior OF top_cpu IS 
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT CPUCore
@@ -64,9 +79,9 @@ ARCHITECTURE behavior OF test_cpu IS
         --device interface with sram
         sram_data:inout std_logic_vector(31 downto 0);
         sram_addr:out std_logic_vector(19 downto 0);
-        ce:out std_logic:='0';
-        oe:out std_logic:='1';
-        we:out std_logic:='1';
+        ce:out std_logic;
+        oe:out std_logic;
+        we:out std_logic;
 
         --device interface with serial
         serial_data_out:out std_logic_vector(31 downto 0);
@@ -80,34 +95,24 @@ ARCHITECTURE behavior OF test_cpu IS
         reset : in std_logic);
     end component;
 
-    COMPONENT mem_stub 
-    Port (  addr : in  STD_LOGIC_VECTOR (19 downto 0);
-            data : inout  STD_LOGIC_VECTOR (31 downto 0);
-            r : in STD_LOGIC;
-            w : in  STD_LOGIC;
-            reset : in STD_LOGIC);
-    end component;
-
-    COMPONENT serial_stub
+    component Serial
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
+            clk : in  STD_LOGIC;
+            reset : in  STD_LOGIC; 
+            en_r : in STD_LOGIC;
+            en_w : in STD_LOGIC;
+            RX : in  STD_LOGIC;
+            TX : out  STD_LOGIC;
             data_in : in  STD_LOGIC_VECTOR(31 downto 0);
-            data_out : out STD_LOGIC_VECTOR(31 downto 0);
-            intr : in  STD_LOGIC;
-            w : in  STD_LOGIC;
-            r : in STD_LOGIC;
-            clk : in STD_LOGIC;
-            reset : in STD_LOGIC);
+            data_out : out  STD_LOGIC_VECTOR(31 downto 0);
+            intr : out  STD_LOGIC
+        );
     end component;
-   
 
-    --Inputs
-    signal clk : std_logic := '0';
-    signal reset : std_logic := '0';
     signal is_dma_mem : std_logic := '0';
     signal is_cancel : std_logic := '0';
     signal data_mem : std_logic_vector(31 downto 0) := (others => '0');
 
-    --Outputs
     signal cpu_clk : std_logic;
     signal is_next_mem : std_logic;
     signal r_core : std_logic;
@@ -115,25 +120,22 @@ ARCHITECTURE behavior OF test_cpu IS
     signal addr_core : std_logic_vector(31 downto 0);
     signal data_core : std_logic_vector(31 downto 0);
 
-    signal ce : std_logic;
-    signal oe : std_logic;
-    signal we : std_logic;
-
     signal serial_data_out : std_logic_vector(31 downto 0);
     signal serial_data_in : std_logic_vector(31 downto 0);
     signal serial_addr : std_logic_vector(31 downto 0);
-    signal data_sram : std_logic_vector(31 downto 0);
-    signal addr_sram : std_logic_vector(19 downto 0);
 
     signal serial_r : std_logic;
     signal serial_w : std_logic;
     signal intr : std_logic;
+    
+    signal reset : std_logic;
 
 
-   -- Clock period definitions
-   constant clk_period : time := 10 ns;
+    -- Clock period definitions
+    constant clk_period : time := 10 ns;
  
 BEGIN
+    reset <= not rst;
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
@@ -156,7 +158,7 @@ BEGIN
         w => w_core,
         data_in => data_core,
         data_out => data_mem,
-        sram_data => data_sram,
+        sram_data => data_bus,
         sram_addr => addr_sram,
         ce => ce,
         oe => oe,
@@ -172,52 +174,20 @@ BEGIN
         reset => reset
     );
 
-    mem: mem_stub Port map(  
-        addr => addr_sram,
-        data => data_sram,
-        r => oe,
-        w => we,
-        reset => reset 
-    );
-
-    serial : serial_stub Port map(
+    ser: Serial PORT MAP(
         addr => serial_addr,
-        data_in => serial_data_out,
-        data_out => serial_data_in,
-        intr => intr, 
-        w => serial_w,
-        r => serial_r,
         clk => clk,
-        reset => reset
+        reset => reset,
+        en_r =>serial_r,
+        en_w =>serial_w,
+        RX => RX,
+        TX => TX,
+        data_in => serial_data_out,
+        data_out =>serial_data_in,
+        intr => intr
     );
 
     is_dma_mem <= '0';
     is_cancel <= '0';
 
-
-   -- Clock process definitions
-    clk_process :process
-    begin
-        clk <= '0';
-        wait for clk_period/2;
-        clk <= '1';
-        wait for clk_period/2;
-    end process;
- 
-
-   -- Stimulus process
-    stim_proc: process
-    begin       
-        reset <= '1';
-        wait for 100 ns;
-        reset <= '0';
-
-        -- hold reset state for 100 ns.
-        wait for 5000 ns;   
-
-
-        -- insert stimulus here 
-
-        wait;
-    end process;
 END;

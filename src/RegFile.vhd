@@ -61,7 +61,7 @@ begin
 		end if;
 	end process;
 
-	process(rs_id, rt_id, rd_id, is_regwrite, rd_data)
+	process(rs_id, rt_id, rd_id, is_regwrite, rd_data, regs)
 	begin
 		if(is_regwrite = '1' and rd_id = rt_id) then
 			rt_data <= rd_data;

@@ -1,10 +1,10 @@
 ----------------------------------------------------------------------------------
 -- Company: 
--- Engineer: gjc13
+-- Engineer: 
 -- 
--- Create Date:    21:56:48 11/02/2015 
+-- Create Date:    18:26:26 11/17/2015 
 -- Design Name: 
--- Module Name:    MemDecoder - Behavioral 
+-- Module Name:    sram - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -13,38 +13,52 @@
 -- Dependencies: 
 --
 -- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
+-- Revision 0.01 - File Created -- Additional Comments: 
 --
 ----------------------------------------------------------------------------------
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL; 
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_unsigned.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
-use work.utilities.all;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
---cpu_clk should be 4 times slower than clk
 entity MemDecoder is
-    Port (  addr : in  STD_LOGIC_VECTOR (31 downto 0);
-			r : in  STD_LOGIC;
-			w : in  STD_LOGIC;
-			data_in : in  STD_LOGIC_VECTOR(31 downto 0);
-			data_out : out  STD_LOGIC_VECTOR(31 downto 0);
-			addr_bus : out  STD_LOGIC_VECTOR (31 downto 0);
-			r_bus : out  STD_LOGIC;
-			w_bus : out  STD_LOGIC;
-			data_bus : inout  STD_LOGIC_VECTOR (31 downto 0);
-			reset : in STD_LOGIC;
-			clk : in STD_LOGIC;
-			cpu_clk : in STD_LOGIC);
+port(
+	addr: in std_logic_vector(31 downto 0);
+	r: in std_logic;
+	w: in std_logic;
+	data_in: in std_logic_vector(31 downto 0);
+	data_out: out std_logic_vector(31 downto 0);
+	
+	--device interface with sram
+	sram_data:inout std_logic_vector(31 downto 0);
+	sram_addr:out std_logic_vector(19 downto 0);
+    ce:out std_logic;
+	oe:out std_logic;
+	we:out std_logic;
+	
+	--device interface with serial
+	serial_data_out:out std_logic_vector(31 downto 0);
+	serial_data_in:in std_logic_vector(31 downto 0);
+	serial_r:out std_logic;
+	serial_w:out std_logic;
+	serial_addr:out std_logic_vector(31 downto 0);
+	
+	cpu_clk: in std_logic;
+	clk: in std_logic;
+    reset : in std_logic
+	);
 end MemDecoder;
 
 architecture Behavioral of MemDecoder is
-	type VisitEnum is (ASYNC, SYNC);
+	type VisitEnum is (SRAM, SERIAL);
 	type State is (IDLE, READ1, READ2, READ3, WRITE1, WRITE2, WRITE3, NOP1, NOP2, NOP3);
 	
 	constant KSEG0_LO : unsigned := X"80000000";
@@ -54,10 +68,14 @@ architecture Behavioral of MemDecoder is
 	signal reset_latch : std_logic;
 	signal pr_state : State;
 	signal next_state : State;
+	signal r_bus : std_logic;
+	signal w_bus : std_logic;
 	signal next_r_bus : std_logic;
 	signal next_w_bus : std_logic;
-	signal next_data_bus : std_logic_vector(31 downto 0);
+
 begin
+    ce <= '0';
+
 	process(reset, clk)
 	begin
 		if (reset = '1') then
@@ -65,19 +83,19 @@ begin
 		elsif (clk'event and clk = '1') then
 			case pr_state is
 				when READ1 =>
-					if(visit_type = ASYNC) then
-						data_out <= data_bus;
+					if(visit_type = SRAM) then
+						data_out <= sram_data;
 					end if;
 				when READ2 => 
-					if(visit_type = SYNC) then
-						data_out <= data_bus;
+					if(visit_type = SERIAL) then
+						data_out <= serial_data_in;
 					end if;
-				when others => null;
+				when others => 
+                    null;
 			end case;
 			pr_state <= next_state;
 			r_bus <= next_r_bus;
 			w_bus <= next_w_bus;
-			data_bus <= next_data_bus;
 		end if;
 	end process;
 	
@@ -88,20 +106,29 @@ begin
 		end if;
 	end process;
 
-	-- the address bus and control enable bus drive logic
+	-- the address bus logic
 	process(addr)
+        variable physical_addr : std_logic_vector(31 downto 0);
 	begin
 		if (addr = X"bfd003f8" or addr = X"bfd003fc") then
-			visit_type <= SYNC;
-			addr_bus <= addr;
+			visit_type <= SERIAL;
+			physical_addr := addr;
 		elsif (unsigned(addr) >= KSEG0_LO and unsigned(addr) < KSEG0_HI) then
 			-- kseg0 we strip off the first bit
-			visit_type <= ASYNC;
-			addr_bus <= addr and X"7FFFFFFF";
+			visit_type <= SRAM;
+			physical_addr := addr and X"7FFFFFFF";
 		else
-			visit_type <= ASYNC;
-			addr_bus <= addr;
+			visit_type <= SRAM;
+			physical_addr := addr;
 		end if;
+        if addr = X"bfd003f8" then
+            serial_addr <= X"00000000";
+        elsif addr = X"bfd003fc" then
+            serial_addr <= X"00000004";
+        else 
+            serial_addr <= X"00000000";
+        end if;
+        sram_addr <= physical_addr(21 downto 2);
 	end process;
 
 	-- the data and control rw bus drive logic
@@ -109,47 +136,40 @@ begin
 	begin
 		case pr_state is 
 			when IDLE =>
-				if (reset_latch = '1') then
-					next_r_bus <= '0';
-					next_w_bus <= '0';
-					next_data_bus <= (others => 'Z');
+                if reset_latch = '1' then
+                    next_r_bus <= '0';
+                    next_w_bus <= '0';
 				elsif (w = '1') then
 					next_r_bus <= '0';
 					next_w_bus <= '1';
-					next_data_bus <= data_in;
 				elsif (r = '1') then
 					next_r_bus <= '1';
 					next_w_bus <= '0';
-					next_data_bus <= (others => 'Z');
+                else 
+                    next_r_bus <= '0';
+                    next_w_bus <= '0';
 				end if;
 			when READ1 =>
-				next_r_bus <= '0';
+				next_r_bus <= '1';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when READ2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when READ3 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when WRITE1 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when WRITE2 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when WRITE3 =>
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 			when others => 
 				next_r_bus <= '0';
 				next_w_bus <= '0';
-				next_data_bus <= (others => 'Z');
 		end case;
 	end process;
 
@@ -161,9 +181,7 @@ begin
 		else
 			case pr_state is
 				when IDLE =>
-					if(reset_latch = '1') then
-						next_state <= NOP1;
-					elsif(r = '1' and w = '0') then
+					if(r = '1' and w = '0') then
 						next_state <= READ1;
 					elsif(r = '0' and w = '1') then
 						next_state <= WRITE1;
@@ -184,5 +202,32 @@ begin
 		end if;
 	end process;
 
+    -- bus dispatcher
+    process(r_bus, w_bus, data_in, visit_type)
+    begin
+        case visit_type is
+            when SRAM =>
+                if r_bus = '1' then
+                    sram_data <= (others => 'Z');
+                elsif w_bus = '1' then
+                    sram_data <= data_in;
+                else 
+                    sram_data <= (others => 'Z');
+                end if;
+                oe <= not r_bus;
+                we <= not w_bus;
+                serial_r <= '0';
+                serial_w <= '0';
+            when SERIAL =>
+                oe <= '1';
+                we <= '1';
+                sram_data <= (others => 'Z');
+                serial_r <= r_bus;
+                serial_w <= w_bus;
+        end case;
+        serial_data_out <= data_in;
+    end process;
+
 end Behavioral;
+
 
