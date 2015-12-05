@@ -105,17 +105,17 @@ package CPUComponent is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
-            status_new : in STD_LOGIC_VECTOR (31 downto 0);
-            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
-            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
-            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
-            force_cp0_write : in STD_LOGIC;
-            status : out STD_LOGIC_VECTOR (31 downto 0);
-            cause : out STD_LOGIC_VECTOR (31 downto 0);
-            count : out STD_LOGIC_VECTOR (31 downto 0);
-            compare : out STD_LOGIC_VECTOR (31 downto 0);
-            ebase : out STD_LOGIC_VECTOR (31 downto 0);
-            epc : out STD_LOGIC_VECTOR(31 downto 0);
+--            status_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            force_cp0_write : in STD_LOGIC;
+--            status : out STD_LOGIC_VECTOR (31 downto 0);
+--            cause : out STD_LOGIC_VECTOR (31 downto 0);
+--            count : out STD_LOGIC_VECTOR (31 downto 0);
+--            compare : out STD_LOGIC_VECTOR (31 downto 0);
+--            ebase : out STD_LOGIC_VECTOR (31 downto 0);
+--            epc : out STD_LOGIC_VECTOR(31 downto 0);
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -217,7 +217,6 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
-<<<<<<< HEAD
     
     component ExceptionDecoder is
     Port (  is_in_slot : in  STD_LOGIC;
@@ -252,8 +251,6 @@ package CPUComponent is
             reset : in STD_LOGIC);
     end component;
 
-=======
->>>>>>> fpga-port
 end CPUComponent;
 
 package body CPUComponent is

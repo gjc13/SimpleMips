@@ -10,6 +10,9 @@ package Definitions is
 	constant ALU_NOT : INTEGER := 5;
 	constant ALU_SHL : INTEGER := 6;
 	constant ALU_SHR : INTEGER := 7;
+	constant ALU_SLL : INTEGER := 8;
+	constant ALU_SRA : INTEGER := 9;
+	constant ALU_SRL : INTEGER := 10;
 	constant ALU_LS : INTEGER := 12; --less signed
 	constant ALU_LU : INTEGER := 13; --less unsigned
 

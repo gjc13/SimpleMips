@@ -137,6 +137,13 @@ BEGIN
 		wait for 10 ns;	
 		assert result = X"00000001" report "lu error" severity error;
 
+		report "test sll";
+		alu_opcode <= ALU_SLL;
+		rhs <= X"FFFF0000";
+		shift_amount <= 4;
+		wait for 10 ns;	
+		assert result = X"FFF00000" report "sll error" severity error;
+
 		wait;
    end process;
 
