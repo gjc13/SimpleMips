@@ -37,11 +37,11 @@ entity RegFile is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
-            status_new : in STD_LOGIC_VECTOR (31 downto 0);
-            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
-            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
-            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
-            force_cp0_write : in STD_LOGIC;
+            status_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
+            cause_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
+            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
+            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
+            force_cp0_write : in STD_LOGIC:='0';
             status : out STD_LOGIC_VECTOR (31 downto 0);
             cause : out STD_LOGIC_VECTOR (31 downto 0);
             count : out STD_LOGIC_VECTOR (31 downto 0);

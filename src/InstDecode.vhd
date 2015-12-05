@@ -63,6 +63,7 @@ begin
         variable rd_id_inst : integer range 0 to 127;
         variable shamt : std_logic_vector(4 downto 0);
         variable npc_masked : std_logic_vector(31 downto 0);
+        variable shift : integer range 0 to 31;
         
         variable is_jump_new : std_logic; 
         variable jump_pc_new : std_logic_vector(31 downto 0); 
@@ -86,6 +87,7 @@ begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
         rt_id_inst := to_integer(unsigned(inst(20 downto 16)));
         rd_id_inst := to_integer(unsigned(inst(15 downto 11)));
+        shift := to_integer(unsigned(inst(10 downto 6)));
         funct := to_integer(unsigned(inst(5 downto 0))); 
         npc_masked := npc and X"F0000000";
 
@@ -108,10 +110,26 @@ begin
         immediate_new := X"00000000";
 
         case op_code is
-            when 0 =>   --nop, jr, jalr, addu, slt, 
+            when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl
                 case funct is 
-                    when 0 => --nop
-                        null;
+                    when 0 => --nop, sll
+                        is_reg_inst_new := '1';
+                        shift_amount_new := shift;
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SLL;
+                        rd_id_new := rd_id_inst;
+                    when 2 => --srl
+                        is_reg_inst_new := '1';
+                        shift_amount_new := shift;
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SRL;
+                        rd_id_new := rd_id_inst;
+                    when 3 => --sra
+                        is_reg_inst_new := '1';
+                        shift_amount_new := shift;
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SRA;
+                        rd_id_new := rd_id_inst;
                     when 8 => --jr
                         is_jump_new := '1';
                         is_jr_new := '1';
@@ -131,19 +149,43 @@ begin
                         is_reg_write_new := '1';
                         alu_opcode_new := ALU_ADD;
                         rd_id_new := rd_id_inst;
+                    when 35 => --subu
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SUB;
+                        rd_id_new := rd_id_inst;
+                    when 36 => --and
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_AND;
+                        rd_id_new := rd_id_inst;
                     when 42 => --slt
                         is_reg_inst_new := '1';
                         is_reg_write_new := '1';
                         alu_opcode_new := ALU_LS;
                         rd_id_new := rd_id_inst;
+                    when 43 => --sltu
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_LU;
+                        rd_id_new := rd_id_inst;
                     when others => NULL;
                 end case;
 
-            when 1 => --bgez
-                is_branch_new := '1';
-                branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
-                branch_opcode_new := B_GE;
-                alu_opcode_new := ALU_NONE;
+            when 1 => --bgez, bltz
+                case rt_id_inst is
+                when 0 =>
+                    is_branch_new := '1';
+                    branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+                    branch_opcode_new := B_L;
+                    alu_opcode_new := ALU_NONE;
+                when 1 =>
+                    is_branch_new := '1';
+                    branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
+                    branch_opcode_new := B_GE;
+                    alu_opcode_new := ALU_NONE;
+                when others => NULL;
+                end case;
             when 3 => --jal
                 is_jump_new := '1';
                 is_jl_new := '1';
@@ -183,6 +225,18 @@ begin
                 rd_id_new := rt_id_inst;
                 immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
 
+            when 10 => --slti
+                is_reg_write_new := '1';
+                alu_opcode_new := ALU_LS;
+                rd_id_new := rt_id_inst;
+                immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+
+            when 11 => --sltiu
+                is_reg_write_new := '1';
+                alu_opcode_new := ALU_LS;
+                rd_id_new := rt_id_inst;
+                immediate_new := X"0000" & inst(15 downto 0);
+
             when 12 => --andi
                 alu_opcode_new := ALU_AND;
                 is_reg_write_new := '1';
@@ -216,6 +270,20 @@ begin
                 rd_id_new := rt_id_inst;
                 immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
                 mem_opcode_new := MEM_W;
+
+            when 36 => --lbu
+                is_mem_read_new := '1';
+                alu_opcode_new := ALU_ADD;
+                is_reg_write_new := '1';
+                rd_id_new := rt_id_inst;
+                immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+                mem_opcode_new := MEM_BU;
+
+            when 40 => --sb
+                is_mem_write_new := '1';
+                alu_opcode_new := ALU_ADD;
+                immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
+                mem_opcode_new := MEM_BS;
 
             when 43 => --sw
                 is_mem_write_new := '1';

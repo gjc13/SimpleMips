@@ -105,17 +105,17 @@ package CPUComponent is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
-            status_new : in STD_LOGIC_VECTOR (31 downto 0);
-            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
-            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
-            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
-            force_cp0_write : in STD_LOGIC;
-            status : out STD_LOGIC_VECTOR (31 downto 0);
-            cause : out STD_LOGIC_VECTOR (31 downto 0);
-            count : out STD_LOGIC_VECTOR (31 downto 0);
-            compare : out STD_LOGIC_VECTOR (31 downto 0);
-            ebase : out STD_LOGIC_VECTOR (31 downto 0);
-            epc : out STD_LOGIC_VECTOR(31 downto 0);
+--            status_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
+--            force_cp0_write : in STD_LOGIC;
+--            status : out STD_LOGIC_VECTOR (31 downto 0);
+--            cause : out STD_LOGIC_VECTOR (31 downto 0);
+--            count : out STD_LOGIC_VECTOR (31 downto 0);
+--            compare : out STD_LOGIC_VECTOR (31 downto 0);
+--            ebase : out STD_LOGIC_VECTOR (31 downto 0);
+--            epc : out STD_LOGIC_VECTOR(31 downto 0);
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -217,43 +217,39 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
---<<<<<<< HEAD
---    
---    component ExceptionDecoder is
---    Port (  is_in_slot : in  STD_LOGIC;
---            victim_addr : in STD_LOGIC_VECTOR (31 downto 0);
---            mem_addr : in  STD_LOGIC_VECTOR (31 downto 0);
---            mem_r : in  STD_LOGIC;
---            mem_w : in  STD_LOGIC;
---            status_old : in  STD_LOGIC_VECTOR (31 downto 0);
---            cause_old : in  STD_LOGIC_VECTOR (31 downto 0);
---            epc_old : in  STD_LOGIC_VECTOR (31 downto 0);
---            entryhi_old : in  STD_LOGIC_VECTOR (31 downto 0);
---            ebase : in STD_LOGIC_VECTOR (31 downto 0);
---            is_intr : in  STD_LOGIC;
---            syscall_intr : in  STD_LOGIC;
---            clk_intr : in  STD_LOGIC;
---            com1_intr : in  STD_LOGIC;
---            dma_intr : in  STD_LOGIC;
---            ps2_intr : in  STD_LOGIC;
---            ri_intr : in  STD_LOGIC;
---            tlb_intr : in  STD_LOGIC;
---            ade_intr : in  STD_LOGIC;
---            is_eret : in  STD_LOGIC;
---            epc_new : out  STD_LOGIC_VECTOR (31 downto 0);
---            status_new : out  STD_LOGIC_VECTOR (31 downto 0);
---            cause_new : out  STD_LOGIC_VECTOR (31 downto 0);
---            badvaddr_new : out  STD_LOGIC_VECTOR (31 downto 0);
---            entryhi_new : out STD_LOGIC_VECTOR(31 downto 0);
---            handler_addr : out  STD_LOGIC_VECTOR (31 downto 0);
---            is_cancel : out  STD_LOGIC;
---            force_cp0_write : out STD_LOGIC;
---            clk : in STD_LOGIC;
---            reset : in STD_LOGIC);
---    end component;
---
---=======
--->>>>>>> fpga-port
+    
+    component ExceptionDecoder is
+    Port (  is_in_slot : in  STD_LOGIC;
+            victim_addr : in STD_LOGIC_VECTOR (31 downto 0);
+            mem_addr : in  STD_LOGIC_VECTOR (31 downto 0);
+            mem_r : in  STD_LOGIC;
+            mem_w : in  STD_LOGIC;
+            status_old : in  STD_LOGIC_VECTOR (31 downto 0);
+            cause_old : in  STD_LOGIC_VECTOR (31 downto 0);
+            epc_old : in  STD_LOGIC_VECTOR (31 downto 0);
+            entryhi_old : in  STD_LOGIC_VECTOR (31 downto 0);
+            ebase : in STD_LOGIC_VECTOR (31 downto 0);
+            is_intr : in  STD_LOGIC;
+            syscall_intr : in  STD_LOGIC;
+            clk_intr : in  STD_LOGIC;
+            com1_intr : in  STD_LOGIC;
+            dma_intr : in  STD_LOGIC;
+            ps2_intr : in  STD_LOGIC;
+            ri_intr : in  STD_LOGIC;
+            tlb_intr : in  STD_LOGIC;
+            ade_intr : in  STD_LOGIC;
+            is_eret : in  STD_LOGIC;
+            epc_new : out  STD_LOGIC_VECTOR (31 downto 0);
+            status_new : out  STD_LOGIC_VECTOR (31 downto 0);
+            cause_new : out  STD_LOGIC_VECTOR (31 downto 0);
+            badvaddr_new : out  STD_LOGIC_VECTOR (31 downto 0);
+            entryhi_new : out STD_LOGIC_VECTOR(31 downto 0);
+            handler_addr : out  STD_LOGIC_VECTOR (31 downto 0);
+            is_cancel : out  STD_LOGIC;
+            force_cp0_write : out STD_LOGIC;
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
+    end component;
 end CPUComponent;
 
 package body CPUComponent is

@@ -57,8 +57,14 @@ begin
 				result <= not lhs;
 			when ALU_SHL => 
 				result <= std_logic_vector(shift_left(unsigned(lhs), shift_amount));
+			when ALU_SLL =>
+				result <= std_logic_vector(shift_left(unsigned(rhs), shift_amount));
 			when ALU_SHR =>
 				result <= std_logic_vector(shift_right(unsigned(lhs), shift_amount));
+			when ALU_SRA =>
+				result <= std_logic_vector(shift_right(signed(rhs), shift_amount));
+			when ALU_SRL =>
+				result <= std_logic_vector(shift_right(unsigned(rhs), shift_amount));
 			when ALU_LS =>
 				result <= (0 => to_std_logic(signed(lhs) < signed(rhs)), others => '0');
 			when ALU_LU =>
