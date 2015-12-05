@@ -81,6 +81,7 @@ begin
 		if (reset = '1') then
 			pr_state <= IDLE;
 		elsif (clk'event and clk = '1') then
+            report State'image(next_state);
 			case pr_state is
 				when READ1 =>
 					if(visit_type = SRAM) then

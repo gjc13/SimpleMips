@@ -26,6 +26,7 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
+use work.Peripherals.all;
  
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -67,47 +68,6 @@ ARCHITECTURE behavior OF top_cpu IS
          data_mem : IN  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
-
-    component MemDecoder
-    port(
-        addr : IN  std_logic_vector(31 downto 0);
-        r : IN  std_logic;
-        w : IN  std_logic;
-        data_in : IN  std_logic_vector(31 downto 0);
-        data_out : OUT  std_logic_vector(31 downto 0);
-
-        --device interface with sram
-        sram_data:inout std_logic_vector(31 downto 0);
-        sram_addr:out std_logic_vector(19 downto 0);
-        ce:out std_logic;
-        oe:out std_logic;
-        we:out std_logic;
-
-        --device interface with serial
-        serial_data_out:out std_logic_vector(31 downto 0);
-        serial_data_in:in std_logic_vector(31 downto 0);
-        serial_r:out std_logic;
-        serial_w:out std_logic;
-        serial_addr:out std_logic_vector(31 downto 0);
-
-        clk : in std_logic;
-        cpu_clk : in std_logic;
-        reset : in std_logic);
-    end component;
-
-    component Serial
-    Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
-            clk : in  STD_LOGIC;
-            reset : in  STD_LOGIC; 
-            en_r : in STD_LOGIC;
-            en_w : in STD_LOGIC;
-            RX : in  STD_LOGIC;
-            TX : out  STD_LOGIC;
-            data_in : in  STD_LOGIC_VECTOR(31 downto 0);
-            data_out : out  STD_LOGIC_VECTOR(31 downto 0);
-            intr : out  STD_LOGIC
-        );
-    end component;
 
     signal is_dma_mem : std_logic := '0';
     signal is_cancel : std_logic := '0';
