@@ -68,15 +68,14 @@ ARCHITECTURE behavior OF top_SerialToRam IS
     signal pr_state : VisitState;
     signal next_state : VisitState;
 
-
     signal buf_clk : std_logic := '0';
     signal cpu_clk : std_logic;
     signal reset : std_logic; 
 
-    signal numRead : integer range 0 to 3;
-
+    signal num_read : integer range 0 to 3;
+    signal num_write : integer range 0 to 3;
     signal databuf : std_logic_vector(31 downto 0);
-    
+    signal outputbuf : std_logic_vector(31 downto 0);
     signal intr : std_logic;
     
     constant WRITE_OFFSET : unsigned := X"00000004";
@@ -127,7 +126,8 @@ BEGIN
             pr_state <= IDLE;
             visit_addr <= X"80000000";
             write_addr <= X"80000000";
-            numRead <= 0;
+            num_read <= 0;
+            num_write <= 0;
         elsif cpu_clk'event and cpu_clk = '1' then
             case pr_state is
                 when IDLE =>
@@ -142,7 +142,7 @@ BEGIN
                         w <= '0';
                     end if;
                 when READ_SERIAL =>
-                    if numRead /= 3 then
+                    if num_read /= 3 then
                         pr_state <= UPDATE_BUF;
                         r <= '0';
                         w <= '0';
@@ -154,7 +154,7 @@ BEGIN
                         data_in <= data_out(7 downto 0) & databuf(23 downto 0);
                     end if;
 
-                    case numRead is
+                    case num_read is
                         when 0 =>
                             databuf(7 downto 0) <= data_out(7 downto 0);
                         when 1 =>
@@ -167,12 +167,18 @@ BEGIN
                             null;
                     end case;
                     
-                    numRead <= numRead + 1;
+                    num_read <= num_read + 1;
                 when UPDATE_BUF =>
                     pr_state <= IDLE;
                     r <= '0';
                     w <= '0';
                 when WRITE_SRAM =>
+                    pr_state <= READ_SRAM;
+                    r <= '1';
+                    w <= '0';
+                    visit_addr <= write_addr;
+                when READ_SRAM =>
+                    outputbuf <= data_out;
                     pr_state <= CHECK_SERIAL;
                     r <= '1';
                     w <= '0';
@@ -184,22 +190,27 @@ BEGIN
                         w <= '0';
                         visit_addr <= X"bfd003fc";
                     else
-                        pr_state <= READ_SRAM;
-                        r <= '1';
-                        w <= '0';
-                        visit_addr <= write_addr;
+                        pr_state <= WRITE_SERIAL;
+                        r <= '0';
+                        w <= '1';
+                        visit_addr <= X"bfd003f8";
+                        data_in <= outputbuf;
                     end if;
-                when READ_SRAM =>
-                    pr_state <= WRITE_SERIAL;
-                    r <= '0';
-                    w <= '1';
-                    visit_addr <= X"bfd003f8";
-                    data_in <= visit_addr;
-                    write_addr <= std_logic_vector(unsigned(write_addr) + WRITE_OFFSET);
                 when WRITE_SERIAL =>
                     pr_state <= IDLE;
-                    r <= '0';
-                    w <= '0';
+                    if num_write /= 3 then
+                        pr_state <= CHECK_SERIAL;
+                        r <= '1';
+                        w <= '0';
+                        visit_addr <= X"bfd003fc";
+                    else
+                        pr_state <= IDLE;
+                        r <= '0';
+                        w <= '0';
+                        write_addr <= std_logic_vector(unsigned(write_addr) + WRITE_OFFSET);
+                    end if;
+                    outputbuf <= X"00" & outputbuf(31 downto 8);
+                    num_write <= num_write + 1;
             end case;
         end if;
     end process;
