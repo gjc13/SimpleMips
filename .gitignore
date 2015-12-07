@@ -68,3 +68,7 @@ isim
 *.data
 *.dump
 *.wcfg
+dumpdata
+*.debug
+planAhead*
+*.tcl

@@ -1,27 +1,27 @@
 
 # PlanAhead Generated physical constraints 
 
-NET "addr_sram[19]" LOC = W24;
+NET "sram_addr[19]" LOC = W24;
 
-NET "addr_sram[18]" LOC = W22;
-NET "addr_sram[17]" LOC = V23;
-NET "addr_sram[16]" LOC = AC23;
-NET "addr_sram[15]" LOC = AA23;
-NET "addr_sram[14]" LOC = AD22;
-NET "addr_sram[13]" LOC = AB22;
-NET "addr_sram[12]" LOC = AD21;
-NET "addr_sram[11]" LOC = AC20;
-NET "addr_sram[10]" LOC = AD20;
-NET "addr_sram[9]" LOC = AC19;
-NET "addr_sram[8]" LOC = AC16;
-NET "addr_sram[7]" LOC = AC15;
-NET "addr_sram[6]" LOC = AD15;
-NET "addr_sram[5]" LOC = AC14;
-NET "addr_sram[4]" LOC = V26;
-NET "addr_sram[3]" LOC = V24;
-NET "addr_sram[2]" LOC = W26;
-NET "addr_sram[1]" LOC = W25;
-NET "addr_sram[0]" LOC = Y26;
+NET "sram_addr[18]" LOC = W22;
+NET "sram_addr[17]" LOC = V23;
+NET "sram_addr[16]" LOC = AC23;
+NET "sram_addr[15]" LOC = AA23;
+NET "sram_addr[14]" LOC = AD22;
+NET "sram_addr[13]" LOC = AB22;
+NET "sram_addr[12]" LOC = AD21;
+NET "sram_addr[11]" LOC = AC20;
+NET "sram_addr[10]" LOC = AD20;
+NET "sram_addr[9]" LOC = AC19;
+NET "sram_addr[8]" LOC = AC16;
+NET "sram_addr[7]" LOC = AC15;
+NET "sram_addr[6]" LOC = AD15;
+NET "sram_addr[5]" LOC = AC14;
+NET "sram_addr[4]" LOC = V26;
+NET "sram_addr[3]" LOC = V24;
+NET "sram_addr[2]" LOC = W26;
+NET "sram_addr[1]" LOC = W25;
+NET "sram_addr[0]" LOC = Y26;
 
 
 NET "data_bus[31]" LOC = AE15;
@@ -61,7 +61,6 @@ NET "ce" LOC = AA26;
 NET "oe" LOC = AD17;
 NET "we" LOC = AA25;
 NET "clk" LOC = U26;
-NET "step_clk" LOC = T3;
 
 NET "RX" LOC=P24;
 NET "TX" LOC=R26;
