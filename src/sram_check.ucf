@@ -1,8 +1,4 @@
-
-# PlanAhead Generated physical constraints 
-
 NET "addr_sram[19]" LOC = W24;
-
 NET "addr_sram[18]" LOC = W22;
 NET "addr_sram[17]" LOC = V23;
 NET "addr_sram[16]" LOC = AC23;
@@ -22,6 +18,28 @@ NET "addr_sram[3]" LOC = V24;
 NET "addr_sram[2]" LOC = W26;
 NET "addr_sram[1]" LOC = W25;
 NET "addr_sram[0]" LOC = Y26;
+
+NET "addr_in[19]" LOC = U3;
+NET "addr_in[18]" LOC = U4;
+NET "addr_in[17]" LOC = V3;
+NET "addr_in[16]" LOC = V4;
+NET "addr_in[15]" LOC = W3;
+NET "addr_in[14]" LOC = W5;
+NET "addr_in[13]" LOC = L2;
+NET "addr_in[12]" LOC = L1;
+NET "addr_in[11]" LOC = M1;
+NET "addr_in[10]" LOC = N2;
+NET "addr_in[9]" LOC = N1;
+NET "addr_in[8]" LOC = P1;
+NET "addr_in[7]" LOC = R2;
+NET "addr_in[6]" LOC = R1;
+NET "addr_in[5]" LOC = U2;
+NET "addr_in[4]" LOC = U1;
+NET "addr_in[3]" LOC = V1;
+NET "addr_in[2]" LOC = W2;
+NET "addr_in[1]" LOC = W1;
+NET "addr_in[0]" LOC = Y5;
+
 
 
 NET "data_bus[31]" LOC = AE15;
@@ -60,10 +78,7 @@ NET "data_bus[0]" LOC = AC24;
 NET "ce" LOC = AA26;
 NET "oe" LOC = AD17;
 NET "we" LOC = AA25;
-NET "clk" LOC = U26;
-NET "step_clk" LOC = T3;
 
-NET "RX" LOC=P24;
-NET "TX" LOC=R26;
-
-NET "rst" LOC=T1;
+NET "w_in" LOC = L4;
+NET "r_in" : LOC = L3;
+NET "selector" : LOC = M3;

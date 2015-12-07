@@ -34,6 +34,7 @@ use work.Peripherals.all;
 
 ENTITY top_cpu IS
     port(clk:in std_logic;
+        step_clk : in std_logic;
         rst : in std_logic;
 
         --sram
