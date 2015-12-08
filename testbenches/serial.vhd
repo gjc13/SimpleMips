@@ -59,7 +59,7 @@ begin
 				if (addr = X"00000000") then
 					data_out <= X"00000031";
 				elsif (addr = X"00000004") then
-					data_out <= X"00000001";
+					data_out <= X"00000000";
 				end if;
 			else
 				data_out <= (others => 'Z');

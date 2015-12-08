@@ -250,7 +250,6 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
-
 end CPUComponent;
 
 package body CPUComponent is

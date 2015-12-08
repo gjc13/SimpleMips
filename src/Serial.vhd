@@ -38,7 +38,7 @@ architecture Behavioral of Serial is
     ----------------------------------------------------------------------------
     -- UART constants
     ----------------------------------------------------------------------------
-    constant BAUD_RATE              : positive := 19200; --115200;
+    constant BAUD_RATE              : positive := 115200; --115200;
     constant CLOCK_FREQUENCY        : positive := 50000000; --100000000;
     ----------------------------------------------------------------------------
     -- Component declarations
@@ -73,11 +73,24 @@ architecture Behavioral of Serial is
     signal uart_out_ack        : std_logic;
     signal uart_writing        : std_logic;
 
-    type State is (idle, start_read, read_data, start_write, write_data);
-    signal pr_state : State := idle;
+    type ReadSate is (read_idle, read_data, set_read);
+    type WriteState is (write_idle, set_data, set_write);
+
+
+    signal pr_r_state : ReadSate := read_idle;
+    signal next_r_state : ReadSate := read_idle;
+    signal pr_w_state : WriteState := write_idle;
+    signal next_w_state : WriteState := write_idle;
     signal data : std_logic_vector(31 downto 0);
+    signal next_data : std_logic_vector(31 downto 0);
     signal data_ready : std_logic := '0';
-	signal status : std_logic_vector(31 downto 0);       --01 when data ready to read, 10 when busy
+    signal next_data_ready : std_logic := '0';
+	signal status : std_logic_vector(31 downto 0);--01 when data ready to read, 10 when busy
+	signal next_status : std_logic_vector(31 downto 0);--01 when data ready to read, 10 when busy
+    signal next_uart_in_stb : std_logic := '0';
+    signal next_uart_data_in : std_logic_vector(7 downto 0);
+    signal next_uart_out_ack : std_logic := '0';
+    signal is_new_data : std_logic;
 begin
      -- UART instantiation
     UART_instance : UART
@@ -85,7 +98,7 @@ begin
             BAUD_RATE           => BAUD_RATE,
             CLOCK_FREQUENCY     => CLOCK_FREQUENCY
     )
-    port map    (  
+    port map (  
             -- General
             CLOCK               => clk,
             RESET               => reset,
@@ -99,70 +112,125 @@ begin
             RX                  => RX,
             WRITING             => uart_writing
     );
-     
+
     intr <= data_ready;
-
-    process (clk) 
-    variable next_state : State;
+    next_status(1) <= uart_writing;
+    next_status(0) <= data_ready;
+     
+    process (clk, reset)
     begin
-        if rising_edge(clk) then
-            if reset = '1' then
-                uart_in_stb        <= '0';
-                uart_out_ack       <= '0';
-                uart_data_in       <= (others => '0');
-                next_state         := idle;
-                data_out <= X"00000000";
-                status <= X"00000000";
-                data_ready <= '0';
-            else
-                status(1) <= uart_writing;
-                status(0) <= data_ready;
-
-                if en_r = '1' then
-                    if addr = X"00000000" then
-                        data_out <= data;
-                        data_ready <= '0';
-                    elsif addr = X"00000004" then
-                        data_out <= status;
-                    end if;
-                end if;
-                     
-                case pr_state is
-                    when idle =>
-                        uart_in_stb        <= '0';
-                        uart_out_ack       <= '0';
-                        if en_w = '1' and addr = X"00000000" then
-                            next_state := start_write;
-                            uart_data_in <= data_in(7 downto 0);
-                        elsif uart_out_stb = '1' and data_ready = '0' then
-                            next_state := start_read;
-                        else 
-                            next_state := idle;
-                        end if;
-                                
-                    when start_write =>
-                        next_state := write_data;
-                        uart_in_stb <= '1';
-                         
-                    when write_data => 
-                        next_state := idle;
-                            
-                    when start_read =>
-                        next_state := read_data;
-                        data(7 downto 0) <= uart_data_out(7 downto 0);
-                        data(31 downto 8) <= (others => '0');
-                          
-                    when read_data => 
-                        next_state := idle;
-                        data_ready <= '1';
-                        uart_out_ack <= '1';
-                    
-                    when others => null;
-                end case;
-                pr_state <= next_state;
-            end if;
+        if reset = '1' then
+            pr_r_state <= read_idle;
+            pr_w_state <= write_idle;
+            data_ready <= '0';
+            data <= (others => '0');
+            status <= (others => '0');
+            data_ready <= '0';
+            uart_in_stb <= '0';
+            uart_data_in <= (others => '0');
+            uart_out_ack <= '0';
+        elsif clk'event and clk = '1' then
+            pr_r_state <= next_r_state;
+            pr_w_state <= next_w_state;
+            data <= next_data;
+            data_ready <= next_data_ready;
+            status <= next_status;
+            uart_in_stb <= next_uart_in_stb;
+            uart_data_in <= next_uart_data_in;
+            uart_out_ack <= next_uart_out_ack;
         end if;
     end process;
 
+    process (pr_w_state, en_w, addr, uart_in_ack, data_in, uart_data_in)
+    begin
+        case pr_w_state is
+            when write_idle => 
+                if en_w = '1' and addr = X"00000000" then
+                    next_w_state <= set_data;
+                    next_uart_in_stb <= '0';
+                    next_uart_data_in <= data_in(7 downto 0);
+                else
+                    next_w_state <= write_idle;
+                    next_uart_in_stb <= '0';
+                    next_uart_data_in <= X"00";
+                end if;
+            when set_data =>
+                next_w_state <= set_write;
+                next_uart_in_stb <= '1';
+                next_uart_data_in <= uart_data_in;
+            when set_write =>
+                if uart_in_ack = '1' then
+                    next_w_state <= write_idle;
+                    next_uart_in_stb <= '0';
+                    next_uart_data_in <= X"00";
+                else
+                    next_w_state <= set_write;
+                    next_uart_in_stb <= '1';
+                    next_uart_data_in <= uart_data_in;
+                end if;
+            when others =>
+                next_w_state <= write_idle;
+                next_uart_in_stb <= '0';
+                next_uart_data_in <= X"00";
+        end case;
+    end process;
+
+    process (pr_r_state, uart_out_stb, data, uart_data_out)
+    begin
+        case pr_r_state is
+            when read_idle =>
+                if uart_out_stb = '1' then
+                    next_r_state <= read_data;
+                    next_uart_out_ack <= '0';
+                else
+                    next_r_state <= read_idle;
+                    next_uart_out_ack <= '0';
+                end if;
+                is_new_data <= '0';
+                next_data <= data;
+            when read_data =>
+                next_r_state <= set_read;
+                next_uart_out_ack <= '1';
+                next_data <= data(31 downto 8) & uart_data_out;
+                is_new_data <= '1';
+            when set_read =>
+                if uart_out_stb = '1' then
+                    next_r_state <= set_read;
+                    next_uart_out_ack <= '1';
+                else
+                    next_r_state <= read_idle;
+                    next_uart_out_ack <= '0';
+                end if;
+                is_new_data <= '0';
+                next_data <= data;
+            when others =>
+                next_r_state <= read_idle;
+                next_uart_out_ack <= '0';
+                is_new_data <= '0';
+                next_data <= data;
+        end case;
+    end process;
+
+    process (data_ready, is_new_data, addr, en_r)
+    begin
+        if is_new_data = '1' then
+            next_data_ready <= '1';
+        elsif addr = X"00000000" and en_r = '1' then
+            next_data_ready <= '0';
+        else
+            next_data_ready <= data_ready;
+        end if;
+    end process;
+
+    process (addr, en_r, data, status)
+    begin
+        if addr = X"00000000" and en_r = '1' then
+            data_out <= data;
+        elsif addr = X"00000004" and en_r = '1' then
+            data_out <= status;
+        else
+            data_out <= (others => '0');
+        end if;
+    end process;
 end Behavioral;
 
