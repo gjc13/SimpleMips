@@ -130,13 +130,7 @@ begin
                         is_reg_write_new := '1';
                         alu_opcode_new := ALU_SRA;
                         rd_id_new := rd_id_inst;
-							when 4 => --sllv
-								is_reg_inst_new := '1';
-                        is_reg_write_new := '1';
-                        alu_opcode_new := ALU_SLLV;
-                        rd_id_new := rd_id_inst;
-							when 6 => --srlv
-								is_reg_inst_new := '1';
+							
                     when 4 => --sllv
                         is_reg_inst_new := '1';
                         is_reg_write_new := '1';
