@@ -64,6 +64,8 @@ begin
 				result <= std_logic_vector(shift_right(signed(rhs), shift_amount));
 			when ALU_SRL =>
 				result <= std_logic_vector(shift_right(unsigned(rhs), shift_amount));
+			when ALU_NOR =>
+				result <= not(lhs or rhs);
 			when ALU_LS =>
 				result <= (0 => to_std_logic(signed(lhs) < signed(rhs)), others => '0');
 			when ALU_LU =>

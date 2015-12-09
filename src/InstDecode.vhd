@@ -110,7 +110,7 @@ begin
         immediate_new := X"00000000";
 
         case op_code is
-            when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl, sllv, srlv
+            when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl, sllv, srlv, nor, or
                 case funct is 
                     when 0 => --nop, sll
                         is_reg_inst_new := '1';
@@ -169,6 +169,16 @@ begin
                         is_reg_write_new := '1';
                         alu_opcode_new := ALU_AND;
                         rd_id_new := rd_id_inst;
+                    when 37 => --or
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_OR;
+                        rd_id_new := rd_id_inst;
+                    when 39 => --nor
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_NOR;
+                        rd_id_new := rd_id_inst;
                     when 42 => --slt
                         is_reg_inst_new := '1';
                         is_reg_write_new := '1';
@@ -196,6 +206,11 @@ begin
                     alu_opcode_new := ALU_NONE;
                 when others => NULL;
                 end case;
+
+            when 2 => --j
+                is_jump_new := '1';
+                jump_pc_new := npc_masked or std_logic_vector(resize(unsigned(inst(25 downto 0) & "00"), jump_pc'length));
+                alu_opcode_new := ALU_NONE;
 
             when 3 => --jal
                 is_jump_new := '1';
