@@ -38,7 +38,6 @@ entity alu is
 end alu;
 
 architecture Behavioral of alu is
-
 begin
 	process(lhs, rhs, shift_amount, alu_opcode)
 	begin
@@ -70,9 +69,9 @@ begin
 			when ALU_LU =>
 				result <= (0 => to_std_logic(unsigned(lhs) < unsigned(rhs)), others => '0');
 			when ALU_SLLV =>
-				result <= std_logic_vector(shift_left(unsigned(rhs), to_integer(unsigned(lhs))));
+				result <= std_logic_vector(shift_left(unsigned(rhs), to_integer(unsigned(lhs(4 downto 0)))));
 			when ALU_SRLV =>
-				result <= std_logic_vector(shift_right(unsigned(rhs), to_integer(unsigned(lhs))));
+				result <= std_logic_vector(shift_right(unsigned(rhs), to_integer(unsigned(lhs(4 downto 0)))));
 			when others =>
 				result <= X"00000000";
 		end case;
