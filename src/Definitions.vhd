@@ -15,6 +15,8 @@ package Definitions is
 	constant ALU_SRL : INTEGER := 10;
 	constant ALU_LS : INTEGER := 12; --less signed
 	constant ALU_LU : INTEGER := 13; --less unsigned
+	constant ALU_SLLV : INTEGER := 14;
+	constant ALU_SRLV : INTEGER := 15;
 
 	-- all branch compare is signed compare
 	constant B_ALL: INTEGER := 0;

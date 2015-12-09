@@ -110,7 +110,7 @@ begin
         immediate_new := X"00000000";
 
         case op_code is
-            when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl
+            when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl, sllv, srlv
                 case funct is 
                     when 0 => --nop, sll
                         is_reg_inst_new := '1';
@@ -129,6 +129,16 @@ begin
                         shift_amount_new := shift;
                         is_reg_write_new := '1';
                         alu_opcode_new := ALU_SRA;
+                        rd_id_new := rd_id_inst;
+                    when 4 => --sllv
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SLLV;
+                        rd_id_new := rd_id_inst;
+                    when 6 => --srlv
+                        is_reg_inst_new := '1';
+                        is_reg_write_new := '1';
+                        alu_opcode_new := ALU_SRLV;
                         rd_id_new := rd_id_inst;
                     when 8 => --jr
                         is_jump_new := '1';
@@ -186,6 +196,7 @@ begin
                     alu_opcode_new := ALU_NONE;
                 when others => NULL;
                 end case;
+
             when 3 => --jal
                 is_jump_new := '1';
                 is_jl_new := '1';

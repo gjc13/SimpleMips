@@ -69,6 +69,10 @@ begin
 				result <= (0 => to_std_logic(signed(lhs) < signed(rhs)), others => '0');
 			when ALU_LU =>
 				result <= (0 => to_std_logic(unsigned(lhs) < unsigned(rhs)), others => '0');
+			when ALU_SLLV =>
+				result <= std_logic_vector(shift_left(unsigned(rhs), to_integer(unsigned(lhs))));
+			when ALU_SRLV =>
+				result <= std_logic_vector(shift_right(unsigned(rhs), to_integer(unsigned(lhs))));
 			when others =>
 				result <= X"00000000";
 		end case;
