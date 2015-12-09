@@ -143,6 +143,20 @@ BEGIN
 		shift_amount <= 4;
 		wait for 10 ns;	
 		assert result = X"FFF00000" report "sll error" severity error;
+		
+		report "test sllv";
+		alu_opcode <= ALU_SLLV;
+		rhs <= X"FFFF0000";
+		lhs <= X"00000004";
+		wait for 10 ns;	
+		assert result = X"FFF00000" report "sllv error" severity error;
+		
+		report "test srlv";
+		alu_opcode <= ALU_SRLV;
+		rhs <= X"FFFF0000";
+		lhs <= X"00000004";
+		wait for 10 ns;	
+		assert result = X"0FFFF000" report "srlv error" severity error;
 
 		wait;
    end process;
