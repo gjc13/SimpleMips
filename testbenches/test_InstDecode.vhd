@@ -551,6 +551,40 @@ BEGIN
 		assert shift_amount = 19 report "shift_amount error" severity error;
 		wait for 10ns;
 
+		report "testing sllv";
+		inst <= X"01495804";
+		wait for 10ns;
+		assert is_jump = '0' report "is_jump error" severity error;
+		assert is_branch = '0' report "is_branch error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
+		assert is_mem_write = '0' report "is_mem_write error" severity error;
+		assert is_mem_read = '0' report "is_mem_read error" severity error;
+		assert mem_opcode = MEM_W report "mem_opcode error" severity error;
+		assert alu_opcode = ALU_SLLV report "alu_opcode error" severity error;
+		assert is_reg_write = '1' report "is_reg_write error" severity error;
+		assert immediate = X"00000000" report "immediate error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert shift_amount = 0 report "shift_amount error" severity error;
+		wait for 10ns;
+		
+		report "testing srlv";
+		inst <= X"01495806";
+		wait for 10ns;
+		assert is_jump = '0' report "is_jump error" severity error;
+		assert is_branch = '0' report "is_branch error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert is_reg_inst ='1' report "is_rega_inst error" severity error;
+		assert is_mem_write = '0' report "is_mem_write error" severity error;
+		assert is_mem_read = '0' report "is_mem_read error" severity error;
+		assert mem_opcode = MEM_W report "mem_opcode error" severity error;
+		assert alu_opcode = ALU_SRLV report "alu_opcode error" severity error;
+		assert is_reg_write = '1' report "is_reg_write error" severity error;
+		assert immediate = X"00000000" report "immediate error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert shift_amount = 0 report "shift_amount error" severity error;
+		wait for 10ns;
+
       wait;
    end process;
 
