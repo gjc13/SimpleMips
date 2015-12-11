@@ -138,10 +138,8 @@ begin
     begin
         status := status_old;
         if need_intr = '1' then
-            status(KSU) := "00";
             status(EXL) := '1';
         elsif is_eret = '1' then
-            status(KSU) := "10";
             status(EXL) := '0';
         end if;
         status_new <= status;

@@ -244,7 +244,7 @@ BEGIN
 
         report "test tlbwl intr";
         rd_id <= STATUS_I;
-        rd_data <= X"00000011";
+        rd_data <= X"00000001";
         is_regwrite <= '1';
         is_intr <= '0';
         tlb_intr <= '0';
@@ -271,7 +271,7 @@ BEGIN
 
         report "test tlbws intr";
         rd_id <= STATUS_I;
-        rd_data <= X"00000011";
+        rd_data <= X"00000001";
         is_regwrite <= '1';
         is_intr <= '0';
         tlb_intr <= '0';
@@ -295,7 +295,7 @@ BEGIN
 
         report "test ri intr";
         rd_id <= STATUS_I;
-        rd_data <= X"00000011";
+        rd_data <= X"00000001";
         is_regwrite <= '1';
         is_intr <= '0';
         tlb_intr <= '0';
@@ -317,7 +317,7 @@ BEGIN
 
         report "test clk intr";
         rd_id <= STATUS_I;
-        rd_data <= X"00000011";
+        rd_data <= X"00000001";
         is_regwrite <= '1';
         is_intr <= '0';
         ri_intr <= '0';
@@ -339,7 +339,7 @@ BEGIN
 
         report "test com1 intr";
         rd_id <= STATUS_I;
-        rd_data <= X"00000011";
+        rd_data <= X"00000001";
         is_regwrite <= '1';
         is_intr <= '0';
         clk_intr <= '0';
@@ -377,7 +377,7 @@ BEGIN
         dma_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000003"report "status_new error" severity error;
+        assert status_new = X"00000013"report "status_new error" severity error;
         assert cause_new = X"00000800" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
@@ -399,9 +399,21 @@ BEGIN
         ps2_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000003"report "status_new error" severity error;
+        assert status_new = X"00000013"report "status_new error" severity error;
         assert cause_new = X"00004000" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
+
+        rd_id <= STATUS_I;
+        rd_data <= X"00000013";
+        is_regwrite <= '1';
+        is_intr <= '0';
+        com1_intr <= '0';
+        wait for clk_period;
+
+        is_intr <= '0';
+        wait for 50 ns;
+        is_eret <= '1';
+        assert status_new = X"0000011" report "status_new error" severity error;
 
         wait;
     end process;
