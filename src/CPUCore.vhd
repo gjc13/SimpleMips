@@ -132,7 +132,7 @@ architecture Behavioral of CPUCore is
 begin
     cpu_clk <= inner_cpu_clk;
 	rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
-	rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
+	--rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
 	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
 	result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
 	is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
@@ -186,6 +186,7 @@ begin
 		is_reg_write => is_reg_write_id,
 		alu_opcode => alu_op_code_id,
 		rd_id => rd_id_id,
+		rt_id => rt_id_id,
         need_bubble => inst_bubble_id,
 		immediate => immediate_id
 	);
