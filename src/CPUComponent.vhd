@@ -67,7 +67,10 @@ package CPUComponent is
             is_reg_write : out  STD_LOGIC;
             alu_opcode : out  INTEGER RANGE 0 to 15;
             rd_id : out  INTEGER RANGE 0 to 127;
-            immediate : out STD_LOGIC_VECTOR(31 downto 0));
+            immediate : out STD_LOGIC_VECTOR(31 downto 0);
+            need_bubble : out STD_LOGIC;
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
     end component;
 
     component BranchByPass
@@ -121,7 +124,9 @@ package CPUComponent is
     end component;
 
     component ID_EX_Regs
-    Port (  npc_id : in  STD_LOGIC_VECTOR (31 downto 0);
+    Port (  inst_id : in STD_LOGIC_VECTOR(31 downto 0);
+            inst_ex : out  STD_LOGIC_VECTOR (31 downto 0);
+            npc_id : in  STD_LOGIC_VECTOR (31 downto 0);
             npc_ex : out  STD_LOGIC_VECTOR (31 downto 0);
             rs_data_id : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_ex : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -151,6 +156,8 @@ package CPUComponent is
             rt_id_ex : out integer range 0 to 127;
             rd_id_id : in  integer range 0 to 127;
             rd_id_ex : out integer range 0 to 127;
+            inst_bubble_id : in STD_LOGIC;
+            inst_bubble_ex : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -202,6 +209,7 @@ package CPUComponent is
 
     component DataMasker
     Port (  data_in : in  STD_LOGIC_VECTOR (31 downto 0);
+            data_old : in STD_LOGIC_VECTOR (31 downto 0);
             mem_op_code : in integer range 0 to 7;
             data_out : out  STD_LOGIC_VECTOR (31 downto 0));
     end component;

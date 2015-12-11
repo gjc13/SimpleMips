@@ -48,6 +48,7 @@ architecture Behavioral of CPUCore is
 	signal sub_clk: std_logic := '0';
 	signal inner_cpu_clk: std_logic := '0';
 	
+    signal is_bubble_if : std_logic;
 	signal is_bubble: std_logic;
 	signal need_branch: std_logic;
 	signal branch_pc: std_logic_vector(31 downto 0);
@@ -57,6 +58,7 @@ architecture Behavioral of CPUCore is
 	signal inst_if : std_logic_vector(31 downto 0);
 	signal npc_if : std_logic_vector(31 downto 0);
 	signal inst_id : std_logic_vector(31 downto 0);
+    signal inst_use : std_logic_vector(31 downto 0);
 	signal npc_id : std_logic_vector(31 downto 0);
 
 	--first id means id, the second means the instruction decode phase
@@ -81,8 +83,10 @@ architecture Behavioral of CPUCore is
 	signal alu_op_code_id : integer range 0 to 15;
 	signal rd_id_id : integer range 0 to 127;
 	signal immediate_id : std_logic_vector(31 downto 0);
+    signal inst_bubble_id : std_logic;
 
 	signal npc_ex : std_logic_vector(31 downto 0);
+    signal inst_ex : std_logic_vector(31 downto 0);
 	signal rs_ex : std_logic_vector(31 downto 0);
 	signal rt_ex : std_logic_vector(31 downto 0);
 	signal immediate_ex : std_logic_vector(31 downto 0);
@@ -97,6 +101,7 @@ architecture Behavioral of CPUCore is
 	signal rd_id_ex : integer range 0 to 127;
 	signal rs_id_ex : integer range 0 to 127;
 	signal rt_id_ex : integer range 0 to 127;
+    signal inst_bubble_ex : std_logic;
 
 	signal alu_lhs : std_logic_vector(31 downto 0);
 	signal alu_rhs : std_logic_vector(31 downto 0);
@@ -135,9 +140,12 @@ begin
 	is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
 	data_core <= rt_mem;
 	result_mem_final <= data_masked when is_mem_read_mem = '1' else result_mem;
+    inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
+
+    is_bubble_if <= is_bubble or inst_bubble_id;
 
 	if_phase: IFPhase Port Map(
-		is_bubble => is_bubble,
+		is_bubble => is_bubble_if,
 		need_branch => need_branch,
 		branch_pc => branch_pc,
 		data_mem => data_masked,
@@ -160,7 +168,7 @@ begin
 	);
 
 	inst_decoder : InstDecode Port Map(
-		inst => inst_id,
+		inst => inst_use,
 		npc => npc_id,
 		is_jump => is_jump_id,
 		jump_pc => jump_pc_id,
@@ -178,6 +186,7 @@ begin
 		is_reg_write => is_reg_write_id,
 		alu_opcode => alu_op_code_id,
 		rd_id => rd_id_id,
+        need_bubble => inst_bubble_id,
 		immediate => immediate_id
 	);
 
@@ -209,6 +218,8 @@ begin
 	);
 
 	id_ex : ID_EX_Regs Port Map(
+        inst_id => inst_id,
+        inst_ex => inst_ex,
 		npc_id => npc_id,
 		npc_ex => npc_ex,
 		rs_data_id => rs_data_id,
@@ -239,6 +250,8 @@ begin
 		rt_id_ex => rt_id_ex,
 		rd_id_id => rd_id_id,
 		rd_id_ex => rd_id_ex,
+        inst_bubble_id => inst_bubble_id,
+        inst_bubble_ex => inst_bubble_ex,
 		clk => inner_cpu_clk,
 		reset => reset
 	);
@@ -316,6 +329,7 @@ begin
 
 	data_mask : DataMasker Port Map(
 		data_in => data_mem,
+        data_out => result_wb,
 		mem_op_code => mem_op_code_mem,
 		data_out => data_masked
 	);

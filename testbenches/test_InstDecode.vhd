@@ -62,9 +62,14 @@ ARCHITECTURE behavior OF test_InstDecode IS
    signal alu_opcode : integer range 0 to 15;
    signal rd_id : integer range 0 to 127;
    signal immediate : std_logic_vector(31 downto 0);
+   signal need_bubble : std_logic;
+   signal clk : std_logic;
+   signal reset : std_logic;
    -- No clocks detected in port list. Replace <clock> below with 
    -- appropriate port name 
- 
+
+    -- Clock period definitions
+    constant clk_period : time := 10 ns; 
 BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: InstDecode PORT MAP (
@@ -86,14 +91,27 @@ BEGIN
           is_reg_write => is_reg_write,
           alu_opcode => alu_opcode,
           rd_id => rd_id,
-          immediate => immediate
+          immediate => immediate,
+          need_bubble => need_bubble,
+          clk => clk,
+          reset => reset
         );
-
+   -- Clock process definitions
+   clk_process :process
+   begin
+        clk <= '0';
+        wait for clk_period/2;
+        clk <= '1';
+        wait for clk_period/2;
+   end process;
+   
    -- Stimulus process
    stim_proc: process
    begin		
+        reset <= '1';
+        wait for 20ns;
 		report "testing nop";
-
+        reset <= '0';
 		wait for 20ns;
 		inst <= X"00000000";
 		wait for 10ns;
@@ -102,9 +120,9 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert is_mem_write = '0' report "is_mem_write error" severity error;
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
-		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert alu_opcode = ALU_NONE report "alu_opcode error" severity error;
+		assert rd_id = 0 report "rd_id error" severity error;
 		assert is_link = '0' report "is_link error" severity error;
+        assert need_bubble = '0' report "need_bubble error" severity error;
 		wait for 10ns;
 
 		report "testing jr";
@@ -121,6 +139,7 @@ BEGIN
 		assert is_reg_write = '0' report "is_reg_write error" severity error;
 		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
 		assert is_link = '0' report "is_link error" severity error;
+        assert need_bubble = '0' report "need_bubble error" severity error;
 		wait for 10ns;
 
 		report "testing jalr";
@@ -437,22 +456,6 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		wait for 10ns;
 
-		report "testing sb";
-		inst <= X"a3be000c";
-		wait for 10ns;
-		assert is_jump = '0' report "is_jump error" severity error;
-		assert is_branch = '0' report "is_branch error" severity error;
-		assert is_link = '0' report "is_link error" severity error;
-		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
-		assert is_mem_write = '1' report "is_mem_write error" severity error;
-		assert is_mem_read = '0' report "is_mem_read error" severity error;
-		assert mem_opcode = MEM_BS report "mem_opcode error" severity error;
-		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
-		assert is_reg_write = '0' report "is_reg_write error" severity error;
-		assert immediate = X"0000000c" report "immediate error" severity error;
-		assert is_link = '0' report "is_link error" severity error;
-		wait for 10ns;
-
 		report "testing sll";
 		inst <= X"0019bcc0";
 		wait for 10ns;
@@ -584,6 +587,29 @@ BEGIN
 		assert is_link = '0' report "is_link error" severity error;
 		assert shift_amount = 0 report "shift_amount error" severity error;
 		wait for 10ns;
+
+        report "testing sb";
+        inst <= X"A0301234";
+        wait for 1ns;
+		assert is_jump = '0' report "is_jump error" severity error;
+		assert is_branch = '0' report "is_branch error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert is_reg_inst ='0' report "is_rega_inst error" severity error;
+		assert is_mem_write = '0' report "is_mem_write error" severity error;
+		assert is_mem_read = '1' report "is_mem_read error" severity error;
+		assert mem_opcode = MEM_W report "mem_opcode error" severity error;
+		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
+		assert is_reg_write = '0' report "is_reg_write error" severity error;
+		assert immediate = X"00001234" report "immediate error" severity error;
+		assert is_link = '0' report "is_link error" severity error;
+		assert shift_amount = 0 report "shift_amount error" severity error;
+        assert need_bubble = '1' report "need_bubble error" severity error;
+        wait for clk_period;
+		assert mem_opcode = MEM_SB report "mem_opcode error" severity error;
+		assert alu_opcode = ALU_ADD report "alu_opcode error" severity error;
+		assert is_mem_write = '1' report "is_mem_write error" severity error;
+		assert is_mem_read = '0' report "is_mem_read error" severity error;
+        assert need_bubble = '0' report "need_bubble error" severity error;
 
       wait;
    end process;

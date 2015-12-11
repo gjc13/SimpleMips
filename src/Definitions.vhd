@@ -28,11 +28,16 @@ package Definitions is
 	constant B_L  : INTEGER := 5;
 	constant B_LE : INTEGER := 6;
 
+    --word, byte signed/unsigned, half signed/unsigned
 	constant MEM_W : INTEGER := 0;
 	constant MEM_BU : INTEGER := 1;
 	constant MEM_BS : INTEGER := 2;
 	constant MEM_HU : INTEGER := 3;
 	constant MEM_HS : INTEGER := 4;
+
+    --save byte, save half
+    constant MEM_SB : INTEGER := 5;
+    constant MEM_SH : INTEGER := 6;
 
 	constant START_ADDR : STD_LOGIC_VECTOR := X"80000000";
 	constant PRE_START_ADDR : STD_LOGIC_VECTOR := X"7FFFFFFC";

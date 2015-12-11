@@ -43,6 +43,7 @@ ARCHITECTURE behavior OF test_DataMasker IS
     COMPONENT DataMasker
     PORT(
          data_in : IN  std_logic_vector(31 downto 0);
+         data_old : in STD_LOGIC_VECTOR (31 downto 0);
          mem_op_code : IN  integer range 0 to 7;
          data_out : OUT  std_logic_vector(31 downto 0)
         );
@@ -51,6 +52,7 @@ ARCHITECTURE behavior OF test_DataMasker IS
 
    --Inputs
    signal data_in : std_logic_vector(31 downto 0) := (others => '0');
+   signal data_old : std_logic_vector(31 downto 0) := X"12345678";
    signal mem_op_code : integer range 0 to 7;
 
  	--Outputs
@@ -63,6 +65,7 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: DataMasker PORT MAP (
           data_in => data_in,
+          data_old => data_old,
           mem_op_code => mem_op_code,
           data_out => data_out
         );
@@ -94,6 +97,14 @@ BEGIN
 		wait for 10 ns;
 		assert data_out = X"FFFFFFFF" report "MEM_BS error" severity error;
 		wait for 10 ns;
+        data_in <= X"00000000";
+        mem_op_code <= MEM_SB;
+        wait for 10 ns;
+		assert data_out = X"12345600" report "MEM_BS error" severity error;
+        wait for 10 ns;
+		mem_op_code <= MEM_SH;
+        wait for 10 ns;
+		assert data_out = X"12340000" report "MEM_BS error" severity error;
 		wait;
    end process;
 

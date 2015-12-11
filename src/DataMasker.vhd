@@ -32,6 +32,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity DataMasker is
     Port (  data_in : in  STD_LOGIC_VECTOR (31 downto 0);
+            data_old : in STD_LOGIC_VECTOR (31 downto 0);
 			mem_op_code : in integer range 0 to 7;
 			data_out : out  STD_LOGIC_VECTOR (31 downto 0));
 end DataMasker;
@@ -51,6 +52,10 @@ begin
 				data_out <= std_logic_vector(resize(unsigned(data_in(15 downto 0)), data_out'length));
 			when MEM_HS =>
 				data_out <= std_logic_vector(resize(signed(data_in(15 downto 0)), data_out'length));
+            when MEM_SB =>
+                data_out <= data_old(31 downto 8) & data_in(7 downto 0);
+            when MEM_SH =>
+                data_out <= data_old(31 downto 16) & data_in(15 downto 0);
 			when others => 
                 data_out <= X"00000000";
 		end case;

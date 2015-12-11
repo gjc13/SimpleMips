@@ -30,7 +30,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity ID_EX_Regs is
-    Port (  npc_id : in  STD_LOGIC_VECTOR (31 downto 0);
+    Port (  inst_id : in STD_LOGIC_VECTOR(31 downto 0);
+            inst_ex : out STD_LOGIC_VECTOR(31 downto 0);
+            npc_id : in  STD_LOGIC_VECTOR (31 downto 0);
 			npc_ex : out  STD_LOGIC_VECTOR (31 downto 0);
 			rs_data_id : in  STD_LOGIC_VECTOR (31 downto 0);
 			rs_ex : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -60,6 +62,8 @@ entity ID_EX_Regs is
 			rt_id_ex : out integer range 0 to 127;
 			rd_id_id : in  integer range 0 to 127;
 			rd_id_ex : out integer range 0 to 127;
+            inst_bubble_id : in STD_LOGIC;
+            inst_bubble_ex : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset: in STD_LOGIC);
 end ID_EX_Regs;
@@ -74,7 +78,9 @@ begin
 			is_mem_write_ex <= '0';
 			is_mem_read_ex <= '0';
 			is_link_ex <= '0';
+            inst_bubble_ex <= '0';
 		elsif(clk'event and clk = '1') then
+            inst_ex <= inst_id;
 			npc_ex <= npc_id;
 			rs_ex <= rs_data_id;
 			rt_ex <= rt_data_id;
@@ -90,6 +96,7 @@ begin
 			rs_id_ex <= rs_id_id;
 			rt_id_ex <= rt_id_id;
 			rd_id_ex <= rd_id_id;
+            inst_bubble_ex <= inst_bubble_id;
 		end if;
 	end process;
 end Behavioral;
