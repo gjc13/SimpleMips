@@ -39,6 +39,10 @@ package Definitions is
     constant MEM_SB : INTEGER := 5;
     constant MEM_SH : INTEGER := 6;
 
+    --hi, lo
+    constant REG_HI : INTEGER := 64;
+    constant REG_LO : INTEGER := 65;
+
 	constant START_ADDR : STD_LOGIC_VECTOR := X"80000000";
 	constant PRE_START_ADDR : STD_LOGIC_VECTOR := X"7FFFFFFC";
 
