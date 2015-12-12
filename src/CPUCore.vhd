@@ -433,7 +433,7 @@ begin
     );
 
     victim_finder : VictimFinder Port Map(
-        now_pc => npc_id,
+        now_pc => npc_id,	--??
         is_bubble => is_bubble,
         pre_branch => is_branch_id,
         victim_pc => victim_pc,
