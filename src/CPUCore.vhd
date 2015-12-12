@@ -332,8 +332,9 @@ begin
 
     data_mask : DataMasker Port Map(
         data_in => data_mem,
-      data_old => result_wb,
+        data_old => result_wb,
         mem_op_code => mem_op_code_mem,
+        result_mem => result_mem,
         data_out => data_masked
     );
 

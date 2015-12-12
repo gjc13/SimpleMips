@@ -212,6 +212,7 @@ package CPUComponent is
     Port (  data_in : in  STD_LOGIC_VECTOR (31 downto 0);
             data_old : in STD_LOGIC_VECTOR (31 downto 0);
             mem_op_code : in integer range 0 to 7;
+            result_mem : in  STD_LOGIC_VECTOR (31 downto 0);
             data_out : out  STD_LOGIC_VECTOR (31 downto 0));
     end component;
 
