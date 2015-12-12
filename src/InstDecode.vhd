@@ -50,6 +50,7 @@ entity InstDecode is
             is_reg_write : out  STD_LOGIC;
             alu_opcode : out  INTEGER RANGE 0 to 15;
             rd_id : out  INTEGER RANGE 0 to 127;
+            rt_id : out  INTEGER RANGE 0 to 127; 
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
             clk : in STD_LOGIC;
@@ -95,6 +96,7 @@ begin
         variable is_reg_write_new : std_logic;
         variable alu_opcode_new : integer RANGE 0 to 15;
         variable rd_id_new : integer RANGE 0 to 127;
+        variable rt_id_new : integer RANGE 0 to 127;
         variable immediate_new : std_logic_vector(31 downto 0);
         variable is_sb_new : std_logic;
         variable need_bubble_new : std_logic;
@@ -123,6 +125,7 @@ begin
         is_reg_write_new := '0';
         alu_opcode_new := ALU_NONE;
         rd_id_new := 0;
+        rt_id_new := rt_id_inst;
         immediate_new := X"00000000";
         is_sb_new := '0';
         need_bubble_new := '0';
@@ -229,6 +232,7 @@ begin
                         branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
                         branch_opcode_new := B_GE;
                         alu_opcode_new := ALU_NONE;
+                        rt_id_new := 0;
                     when others => NULL;
                     end case;
 
@@ -364,6 +368,7 @@ begin
         is_reg_write <= is_reg_write_new;
         alu_opcode <= alu_opcode_new;
         rd_id <= rd_id_new;
+        rt_id <= rt_id_new;
         immediate <= immediate_new;
         next_is_sb_slot <= is_sb_new;
         need_bubble <= need_bubble_new;

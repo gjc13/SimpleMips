@@ -67,6 +67,7 @@ package CPUComponent is
             is_reg_write : out  STD_LOGIC;
             alu_opcode : out  INTEGER RANGE 0 to 15;
             rd_id : out  INTEGER RANGE 0 to 127;
+            rt_id : out  INTEGER RANGE 0 to 127;
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
             clk : in STD_LOGIC;
