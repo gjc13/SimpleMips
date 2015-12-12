@@ -45,6 +45,7 @@ entity InstDecode is
             is_reg_inst : out  STD_LOGIC;
             is_mem_read : out  STD_LOGIC;
             is_mem_write : out  STD_LOGIC;
+				l_is_mem_read : in STD_LOGIC;
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
@@ -350,6 +351,10 @@ begin
 
                 when others => NULL;
             end case;
+				if l_is_mem_read = '1' and is_branch_new = '1' then
+					is_branch_new := '0';
+					need_bubble_new := '1';
+				end if;
         end if;
 
         is_jump <= is_jump_new;
