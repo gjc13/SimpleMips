@@ -71,6 +71,7 @@ package CPUComponent is
             rs_id : out  INTEGER RANGE 0 to 127;
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
+            is_eret : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -261,6 +262,17 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
+
+    component VictimFinder is
+    Port (  now_pc : in  STD_LOGIC_VECTOR (31 downto 0);
+            is_bubble : in  STD_LOGIC;
+            pre_branch : in STD_LOGIC;
+            victim_pc : out  STD_LOGIC_VECTOR (31 downto 0);
+            is_in_slot : out STD_LOGIC;
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
+    end component;
+
 end CPUComponent;
 
 package body CPUComponent is

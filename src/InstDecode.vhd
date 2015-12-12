@@ -54,6 +54,7 @@ entity InstDecode is
             rs_id : out  INTEGER RANGE 0 to 127; 
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
+            is_eret : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end InstDecode;
@@ -103,6 +104,7 @@ begin
         variable immediate_new : std_logic_vector(31 downto 0);
         variable is_sb_new : std_logic;
         variable need_bubble_new : std_logic;
+        variable is_eret_new : std_logic;
 
     begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
@@ -134,6 +136,7 @@ begin
         immediate_new := X"00000000";
         is_sb_new := '0';
         need_bubble_new := '0';
+        is_eret_new := '0';
         
         if is_sb_slot = '1' then
             is_mem_write_new := '1';
@@ -144,6 +147,7 @@ begin
         else
             case op_code is
                 when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl, sllv, srlv, nor, or
+                            --mfhi, mflo,  mthi, mtlo
                     case funct is 
                         when 0 => --nop, sll
                             is_reg_inst_new := '1';
@@ -188,6 +192,34 @@ begin
                             is_reg_write_new := '1';
                             alu_opcode_new := ALU_ADD;
                             rd_id_new := rd_id_inst;
+                        when 16 => --mfhi
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_ADD;
+                            rd_id_new := rd_id_inst;
+                            rt_id_new := REG_HI;
+                            rs_id_new := 0;
+                        when 17 => --mthi
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_ADD;
+                            rd_id_new := REG_HI;
+                            rt_id_new := 0;
+                            rs_id_new := rs_id_inst;
+                        when 18 => --mflo
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_ADD;
+                            rd_id_new := rd_id_inst;
+                            rt_id_new := REG_LO;
+                            rs_id_new := 0;
+                        when 19 => --mtlo
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_ADD;
+                            rd_id_new := REG_LO;
+                            rt_id_new := 0;
+                            rs_id_new := rs_id_inst;
                         when 33 => --addu
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
@@ -330,7 +362,9 @@ begin
                             rd_id_new := rd_id_inst + 32;
                             rt_id_new := rt_id_inst;
                             rs_id_new := 0;
-                        when others => NULL
+                        when 16 => --eret
+                            is_eret_new := '1';
+                        when others => NULL;
                     end case;
 
                 when 32 => --lb
@@ -395,6 +429,7 @@ begin
         immediate <= immediate_new;
         next_is_sb_slot <= is_sb_new;
         need_bubble <= need_bubble_new;
+        is_eret <= is_eret_new;
     end process;
 
 end Behavioral;
