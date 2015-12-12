@@ -55,6 +55,8 @@ begin
                         data_out <= std_logic_vector(resize(unsigned(data_in(23 downto 16)), data_out'length));
                     when "11" =>
                         data_out <= std_logic_vector(resize(unsigned(data_in(31 downto 24)), data_out'length));
+                    when others =>
+                        data_out <= data_in;
                 end case;
             when MEM_BS =>
                 case result_mem(1 downto 0) is
@@ -66,6 +68,8 @@ begin
                         data_out <= std_logic_vector(resize(signed(data_in(23 downto 16)), data_out'length));
                     when "11" =>
                         data_out <= std_logic_vector(resize(signed(data_in(31 downto 24)), data_out'length));
+                    when others =>
+                        data_out <= data_in;
                 end case;
             when MEM_HU =>
                 data_out <= std_logic_vector(resize(unsigned(data_in(15 downto 0)), data_out'length));
@@ -81,6 +85,8 @@ begin
                         data_out <= data_old(31 downto 24) & data_in(7 downto 0) & data_old(15 downto 0);
                     when "11" =>
                         data_out <= data_in(7 downto 0) & data_old(23 downto 0);
+                    when others =>
+                        data_out <= data_in;
                 end case;
             when MEM_SH =>
                 data_out <= data_old(31 downto 16) & data_in(15 downto 0);
