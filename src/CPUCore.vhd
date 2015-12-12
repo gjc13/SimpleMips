@@ -187,7 +187,9 @@ begin
 		alu_opcode => alu_op_code_id,
 		rd_id => rd_id_id,
         need_bubble => inst_bubble_id,
-		immediate => immediate_id
+		immediate => immediate_id,
+		clk=>clk,
+		reset=>reset
 	);
 
 	branch_bypass : BranchByPass Port Map(
@@ -329,7 +331,7 @@ begin
 
 	data_mask : DataMasker Port Map(
 		data_in => data_mem,
-        data_out => result_wb,
+        data_old => result_wb,
 		mem_op_code => mem_op_code_mem,
 		data_out => data_masked
 	);

@@ -52,10 +52,10 @@ begin
 				data_out <= std_logic_vector(resize(unsigned(data_in(15 downto 0)), data_out'length));
 			when MEM_HS =>
 				data_out <= std_logic_vector(resize(signed(data_in(15 downto 0)), data_out'length));
-            when MEM_SB =>
-                data_out <= data_old(31 downto 8) & data_in(7 downto 0);
-            when MEM_SH =>
-                data_out <= data_old(31 downto 16) & data_in(15 downto 0);
+			when MEM_SB =>
+				 data_out <= data_old(31 downto 8) & data_in(7 downto 0);
+			when MEM_SH =>
+				 data_out <= data_old(31 downto 16) & data_in(15 downto 0);
 			when others => 
                 data_out <= X"00000000";
 		end case;
