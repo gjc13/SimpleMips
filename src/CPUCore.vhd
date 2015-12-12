@@ -159,7 +159,7 @@ architecture Behavioral of CPUCore is
     constant LINK_OFFSET : unsigned := X"00000004";
 begin
     cpu_clk <= inner_cpu_clk;
-    rs_id_id <= to_integer(unsigned(inst_use(25 downto 21)));
+    --rs_id_id <= to_integer(unsigned(inst_use(25 downto 21)));
     --rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
     --rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
     is_next_mem <= is_mem_write_ex or is_mem_read_ex;

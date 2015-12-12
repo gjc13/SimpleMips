@@ -431,6 +431,7 @@ begin
         alu_opcode <= alu_opcode_new;
         rd_id <= rd_id_new;
         rt_id <= rt_id_new;
+		  rs_id <= rs_id_new;
         immediate <= immediate_new;
         next_is_sb_slot <= is_sb_new;
         need_bubble <= need_bubble_new;
