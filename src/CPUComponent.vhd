@@ -62,6 +62,7 @@ package CPUComponent is
             is_reg_inst : out  STD_LOGIC;
             is_mem_read : out  STD_LOGIC;
             is_mem_write : out  STD_LOGIC;
+				l_is_mem_read : in STD_LOGIC;
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
@@ -211,11 +212,21 @@ package CPUComponent is
     end component;
 
     component DataMasker
-    Port (  data_in : in  STD_LOGIC_VECTOR (31 downto 0);
+    Port (  
+			--data from mem data_mem
+			data_in : in  STD_LOGIC_VECTOR (31 downto 0);
+			data_in_masked : out STD_LOGIC_VECTOR (31 downto 0);
+			
+			--first,data resultwb
             data_old : in STD_LOGIC_VECTOR (31 downto 0);
+			--data to write (8) rt_mem
+			data_out : in STD_LOGIC_VECTOR (31 downto 0);
+			data_out_masked : out STD_LOGIC_VECTOR (31 downto 0);
+				
             mem_op_code : in integer range 0 to 7;
-            result_mem : in  STD_LOGIC_VECTOR (31 downto 0);
-            data_out : out  STD_LOGIC_VECTOR (31 downto 0));
+            addr : in  STD_LOGIC_VECTOR (31 downto 0)
+	);
+
     end component;
 
 

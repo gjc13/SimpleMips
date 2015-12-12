@@ -58,6 +58,7 @@ entity BranchByPass is
 end BranchByPass;
 
 architecture Behavioral of BranchByPass is
+
 	signal compare_result : std_logic;
 	signal selected_rt : std_logic_vector(31 downto 0);
 	signal rhs : std_logic_vector(31 downto 0);
@@ -75,7 +76,7 @@ begin
 			lhs <= rs;
 		end if;
 	end process;
-
+	
 	process (rt_id, l_is_reg_write, ll_is_reg_write, lll_is_reg_write, l_rd_id, ll_rd_id, lll_rd_id, rt, l_result, ll_result, lll_result)
 	begin
 		if (l_is_reg_write = '1' and l_rd_id /= 0 and l_rd_id = rt_id) then

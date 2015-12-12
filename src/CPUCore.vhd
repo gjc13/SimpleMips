@@ -121,7 +121,8 @@ architecture Behavioral of CPUCore is
     signal is_reg_write_mem : std_logic;
     signal rd_id_mem : integer range 0 to 127;
 
-    signal data_masked : std_logic_vector(31 downto 0);
+    signal data_in_masked : std_logic_vector(31 downto 0);
+    signal data_out_masked : std_logic_vector(31 downto 0);
     signal result_mem_final : std_logic_vector(31 downto 0);
 
     signal result_wb : std_logic_vector(31 downto 0);
@@ -158,6 +159,7 @@ architecture Behavioral of CPUCore is
     constant LINK_OFFSET : unsigned := X"00000004";
 begin
     cpu_clk <= inner_cpu_clk;
+    rs_id_id <= to_integer(unsigned(inst_use(25 downto 21)));
     --rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
     --rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
     is_next_mem <= is_mem_write_ex or is_mem_read_ex;
@@ -165,8 +167,8 @@ begin
     is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
     is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
     is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
-    data_core <= rt_mem;
-    result_mem_final <= data_masked when is_mem_read_mem = '1' else result_mem;
+    data_core <= data_out_masked;
+    result_mem_final <= data_in_masked when is_mem_read_mem = '1' else result_mem;
     inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
 
     is_bubble_if <= is_bubble or inst_bubble_id;
@@ -185,7 +187,7 @@ begin
         is_bubble => is_bubble_if,
         need_branch => need_branch,
         branch_pc => branch_pc,
-        data_mem => data_masked,
+        data_mem => data_mem,
         addr_pc => addr_pc,
         r_pc => r_pc,
         w_pc => w_pc,
@@ -218,6 +220,7 @@ begin
         is_reg_inst => is_reg_inst_id,
         is_mem_read => is_mem_read_id,
         is_mem_write => is_mem_write_id,
+		  l_is_mem_read=>is_mem_read_ex,
         mem_opcode => mem_op_code_id,
         shift_amount => shift_amount_id,
         is_reg_write => is_reg_write_id,
@@ -237,7 +240,7 @@ begin
         rt => rt_data_id,
         immediate => immediate_id,
         l_result => result_ex,
-        ll_result => result_mem,
+        ll_result => result_mem_final,
         lll_result => result_wb,
         rs_id => rs_id_id,
         rt_id => rt_id_id,
@@ -260,7 +263,7 @@ begin
     );
 
     id_ex : ID_EX_Regs Port Map(
-        inst_id => inst_id,
+        inst_id => inst_use,
         inst_ex => inst_ex,
         npc_id => npc_id,
         npc_ex => npc_ex,
@@ -382,10 +385,12 @@ begin
 
     data_mask : DataMasker Port Map(
         data_in => data_mem,
+		data_in_masked => data_in_masked,
         data_old => result_wb,
+		data_out => rt_mem,
+		data_out_masked => data_out_masked,
         mem_op_code => mem_op_code_mem,
-        result_mem => result_mem,
-        data_out => data_masked
+        addr => result_mem
     );
 
     mem_wb : MEM_WB_Regs Port Map(
