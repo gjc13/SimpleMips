@@ -138,7 +138,7 @@ begin
 	is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
 	is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
 	is_reg_write_ex_final <= is_reg_write_ex and (not is_cancel);
-	data_core <= rt_mem;
+	data_core <= data_masked;
 	result_mem_final <= data_masked when is_mem_read_mem = '1' else result_mem;
     inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
 
@@ -148,7 +148,7 @@ begin
 		is_bubble => is_bubble_if,
 		need_branch => need_branch,
 		branch_pc => branch_pc,
-		data_mem => data_masked,
+		data_mem => data_mem,
 		addr_pc => addr_pc,
 		r_pc => r_pc,
 		w_pc => w_pc,
