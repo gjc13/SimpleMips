@@ -142,7 +142,7 @@ begin
 	result_mem_final <= data_masked when is_mem_read_mem = '1' else result_mem;
     inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
 
-    is_bubble_if <= is_bubble or inst_bubble_id;
+    is_bubble_if <= is_bubble or inst_bubble_id or is_dma_mem;
 
 	if_phase: IFPhase Port Map(
 		is_bubble => is_bubble_if,
@@ -187,7 +187,9 @@ begin
 		alu_opcode => alu_op_code_id,
 		rd_id => rd_id_id,
         need_bubble => inst_bubble_id,
-		immediate => immediate_id
+		immediate => immediate_id,
+        clk => inner_cpu_clk,
+        reset => reset
 	);
 
 	branch_bypass : BranchByPass Port Map(
@@ -329,7 +331,7 @@ begin
 
 	data_mask : DataMasker Port Map(
 		data_in => data_mem,
-        data_out => result_wb,
+        data_old => result_wb,
 		mem_op_code => mem_op_code_mem,
 		data_out => data_masked
 	);
