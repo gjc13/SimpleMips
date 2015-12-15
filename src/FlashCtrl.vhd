@@ -30,6 +30,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity FlashCtrl is
     Port ( ctrl_addr : in  STD_LOGIC_VECTOR (31 downto 0);
+           data_in : in STD_LOGIC_VECTOR(31 downto 0);
+           data_out : out  STD_LOGIC_VECTOR (31 downto 0);
            intr : out  STD_LOGIC;
            r : in STD_LOGIC;
            w : in STD_LOGIC;
@@ -55,8 +57,8 @@ end FlashCtrl;
 architecture Behavioral of FlashCtrl is
     type State is (IDLE, CMD_START, CMD_WRITE, CMD_END, 
         READ_EN, READ_START, READ_LATCH, READ_MEM, READ_WAIT_MEM,
-        CHECK_START, CHECK_CMD, CHECK_BUF, CHECK_READ,
-        WRITE_WAIT_MEM, WRITE_MEM, WRITE_EN, WRITE_DATA);
+        CHECK_START, CHECK_CMD, CHECK_BUF, CHECK_READ, CHECK_END,
+        WRITE_WAIT_MEM, WRITE_MEM, WRITE_EN, WRITE_DATA, WRITE_WAIT);
     type Phase is (NOP, READ, ERASE1, ERASE2, CHECK, WRITE1, WRITE2);
     
     constant CTRL_I : std_logic_vector(31 downto 0) := X"00000000";
@@ -102,7 +104,7 @@ architecture Behavioral of FlashCtrl is
     signal pr_phase : Phase;
     signal next_phase : Phase;
 
-    signal cmd : std_logic_vector(16 downto 0);
+    signal cmd : std_logic_vector(15 downto 0);
 
     signal need_latch : std_logic;
     signal latch_hi : std_logic;
@@ -114,21 +116,26 @@ begin
     flash_byte_mode <= '1';
     mem_addr <= mem_now_addr;
     flash_addr <= flash_now_addr;
+    intr <= status_reg(0);
     process(clk, reset)
     begin 
         if(reset = '1') then
-            flash_addr <= (others => '0');
+            flash_now_addr <= (others => '0');
             flash_data <= (others => '0');
-            mem_addr <= (others => '0');
-            mem_data <= (others => '0');
+            mem_now_addr <= (others => '0');
+            mem_data_out <= (others => '0');
+            ctrl_reg <= (others => '0');
+            flash_start_reg <= (others => '0');
+            flash_end_reg <= (others => '0');
+            mem_start_reg <= (others => '0');
             flash_oe <= '1';
             flash_we <= '1';
             mem_r <= '0';
             mem_w <= '0';
-            need_run <= '0';
             pr_state <= IDLE;
             pr_phase <= NOP;
         elsif (clk'event and clk = '1') then
+            report State'image(next_state);
             if w = '1' and r = '0' then
                 case ctrl_addr is
                     when CTRL_I =>
@@ -144,7 +151,7 @@ begin
                 end case;
             end if;
             flash_data <= next_flash_data;
-            mem_addr <= next_mem_addr;
+            mem_now_addr <= next_mem_addr;
             mem_data_out <= next_mem_data;
             flash_oe <= next_flash_oe;
             flash_we <= next_flash_we;
@@ -153,18 +160,17 @@ begin
             pr_phase <= next_phase;
             pr_state <= next_state;
             if w = '1' and r = '0' and ctrl_addr = CTRL_I then
-                flash_now_addr <= flash_start_reg;
+                flash_now_addr <= flash_start_reg(22 downto 0);
                 mem_now_addr <= mem_start_reg;
-                need_run <= '1';
             else
                 flash_now_addr <= next_flash_addr;
                 mem_now_addr <= next_mem_addr;
-                need_run <= need_run_next;
             end if;
         end if;
     end process;
 
-    process(ctrl_reg, pr_state, pr_phase, flash_data, flash_addr, mem_addr)
+
+    process(ctrl_reg, pr_state, pr_phase, flash_data, flash_now_addr, flash_end_reg, mem_now_addr, cmd, databuf)
         variable flash_addr_new : std_logic_vector(22 downto 0);
         variable flash_data_new : std_logic_vector(15 downto 0);
         variable mem_addr_new : std_logic_vector(31 downto 0);
@@ -178,9 +184,9 @@ begin
         variable phase_new : Phase;
         variable need_mem_new : std_logic;
     begin
-        flash_addr_new := flash_addr;
+        flash_addr_new := flash_now_addr;
         flash_data_new := (others => 'Z');
-        mem_addr_new := mem_addr;
+        mem_addr_new := mem_now_addr;
         mem_data_new := (others => '0');
         flash_oe_new := '1';
         flash_we_new := '1';
@@ -192,18 +198,21 @@ begin
         need_mem_new := '0';
         case pr_state is
             when IDLE =>
-                if ctrl_reg = INST_READ then
+                if ctrl_reg = INST_READ and status_reg(0) = '0' then
                     phase_new := READ;
                     flash_we_new := '0';
                     next_state <= CMD_START;
-                elsif ctrl_reg = INST_WRITE then
-                    phase_new := WRITE;
+                    flash_data_new := cmd;
+                elsif ctrl_reg = INST_WRITE and status_reg(0) = '0' then
+                    phase_new := WRITE1;
                     flash_we_new := '0';
                     next_state <= CMD_START;
-                elsif ctrl_reg = INST_ERASE then
+                    flash_data_new := cmd;
+                elsif ctrl_reg = INST_ERASE and status_reg(0) = '0' then
                     phase_new := ERASE1;
                     flash_we_new := '0';
                     next_state <= CMD_START;
+                    flash_data_new := cmd;
                 else
                     next_state <= IDLE;
                 end if;
@@ -224,22 +233,23 @@ begin
                             next_state <= WRITE_WAIT_MEM;
                         else
                             next_state <= WRITE_MEM;
-                            next_r <= '1';
-                            next_mem_addr <= mem_now_addr;
+                            mem_r_new := '1';
+                            mem_addr_new := mem_now_addr;
                         end if;
                     when WRITE2 =>
                         next_state <= WRITE_EN;
+                        flash_data_new := databuf(31 downto 16);
                         flash_we_new := '0';
                     when ERASE1 =>
-                        next_state <= CHECK_CMD;
+                        next_state <= CMD_START;
                         flash_we_new := '0';
                         phase_new := ERASE2;
                     when ERASE2 =>
-                        next_state <= CHECK_CMD;
+                        next_state <= CHECK_START;
                         flash_we_new := '0';
                         phase_new := CHECK;
                     when CHECK =>
-                        next_state <= CHECK_CMD;
+                        next_state <= CHECK_START;
                         flash_we_new := '0';
                     when others =>
                         next_state <= IDLE;
@@ -249,17 +259,18 @@ begin
                 next_state <= READ_START;
             when READ_START =>
                 next_state <= READ_LATCH;
+                flash_oe_new := '0';
                 need_latch_new := '1';
             when READ_LATCH =>
                 need_latch_new := '0';
+                flash_oe_new := '0';
                 flash_addr_new := std_logic_vector(unsigned(flash_now_addr) + FLASH_ADDER);
-                if flash_addr(1) = '1' and next_pend = '0' then
+                if flash_now_addr(1) = '1' and next_pend = '0' then
                     next_state <= READ_MEM;
                     mem_r_new := '0';
                     mem_w_new := '1';
-                    next_mem_data :=  flash_data & databuf(15 downto 0);
-                    next_state := READ_START;
-                elsif flash_addr(1) = '1' and next_pend = '1' then
+                    mem_data_new :=  flash_data & databuf(15 downto 0);
+                elsif flash_now_addr(1) = '1' and next_pend = '1' then
                     next_state <= READ_WAIT_MEM;
                 else
                     next_state <= READ_START;
@@ -269,21 +280,23 @@ begin
                     next_state <= READ_MEM;
                     mem_r_new := '0';
                     mem_w_new := '1';
-                    next_mem_data :=  databuf;
-                    next_state := READ_START;
+                    mem_data_new :=  databuf;
                 else
                     next_state <= READ_WAIT_MEM;
                 end if;
             when READ_MEM =>
                 mem_addr_new := std_logic_vector(unsigned(mem_now_addr) + MEM_ADDER);
-                if flash_now_addr = flash_end_reg then
+                if flash_now_addr = flash_end_reg(22 downto 0) then
                     next_state <= IDLE;
                     finished_new := '1';
                     phase_new := NOP;
-                else
+                elsif flash_now_addr(2) = '0' then 
                     next_state <= CMD_START;
                     flash_we_new := '0';
                     flash_data_new := cmd;
+                elsif flash_now_addr(2) = '1' then
+                    next_state <= READ_START;
+                    flash_oe_new :=  '0';
                 end if;
                 need_mem_new := '1';
             when CHECK_START => 
@@ -296,6 +309,9 @@ begin
                 next_state <= CHECK_READ;
                 flash_oe_new := '0';
             when CHECK_READ =>
+                flash_oe_new := '0';
+                next_state <= CHECK_END;
+            when CHECK_END =>
                 if flash_data(7) = '1' then 
                     next_state <= IDLE;
                     phase_new := NOP;
@@ -305,18 +321,14 @@ begin
                 end if;
             when WRITE_WAIT_MEM =>
                 if next_pend = '1' then
-                    next_pend <= WRITE_WAIT_MEM;
+                    next_state <= WRITE_WAIT_MEM;
                 else 
-                    next_pend <= WRITE_MEM;
-                    next_r <= '1';
+                    next_state <= WRITE_MEM;
+                    next_mem_r <= '1';
                 end if;
             when WRITE_MEM =>
                 next_state <= WRITE_EN;
-                if pr_phase = WRITE1 then
-                    flash_data_new := databuf(15 downto 0);
-                else 
-                    flash_data_new := databuf(31 downto 16);
-                end if;
+                flash_data_new := mem_data_in(15 downto 0);
                 flash_we_new := '0';
                 need_mem_new := '1';
             when WRITE_EN =>
@@ -324,13 +336,15 @@ begin
                 flash_we_new := '0';
                 flash_data_new := flash_data;
             when WRITE_DATA =>
+                next_state <= WRITE_WAIT;
+            when WRITE_WAIT =>
                 flash_addr_new := std_logic_vector(unsigned(flash_now_addr) + FLASH_ADDER);
-                if flash_addr_new = flash_end_reg then
+                if flash_addr_new = flash_end_reg(22 downto 0) then
                     next_state <= IDLE;
                     finished_new := '1';
                     phase_new := NOP;
                 else
-                    next_state <= CHECK_START;
+                    next_state <= CMD_START;
                     flash_we_new := '0';
                     flash_data_new := cmd;
                 end if;
@@ -365,16 +379,20 @@ begin
             elsif pr_state = WRITE_MEM then
                 databuf <= mem_data_in;
             end if;
+        end if;
     end process;
 
-    process(clk)
+    process(clk, reset)
     begin
-        if clk'event and clk = '1' then
+        if reset = '1' then
+            status_reg <= (others => '0');
+        elsif clk'event and clk = '1' then
             if finished = '1' then
-                intr <= '1';
+                status_reg(0) <= '1';
             elsif ctrl_addr = CTRL_I and w = '1' and mem_data_in = INST_CLEAR then
-                intr <= '0';
+                status_reg(0) <= '0';
             end if;
+        end if;
     end process;
 
     process(pr_phase)
