@@ -174,7 +174,7 @@ BEGIN
        data_in <= X"80000000";
        wait for clk_period;
        ctrl_addr <= CTRL_I;
-       data_in <= INST_ERASE;
+       data_in <= INST_WRITE;
        wait for clk_period;
        w <= '0';
        wait for 800 ns;

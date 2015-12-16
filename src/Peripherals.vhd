@@ -65,6 +65,7 @@ package Peripherals is
            mem_r : out  STD_LOGIC;
            mem_w : out  STD_LOGIC;
            clk : in  STD_LOGIC;
+           cpu_clk : in STD_LOGIC;
            reset : in  STD_LOGIC);
     end component;
 

@@ -44,6 +44,8 @@ ENTITY top_cpu IS
         oe: out std_logic;
         we: out std_logic;
         flash_ce : out  STD_LOGIC;
+        flash_ce1 : out STD_LOGIC;
+        flash_ce2 : out STD_LOGIC;
         flash_byte_mode : out  STD_LOGIC;
         flash_oe : out  STD_LOGIC;
         flash_we : out  STD_LOGIC;
@@ -51,9 +53,6 @@ ENTITY top_cpu IS
         flash_data : inout  STD_LOGIC_VECTOR (15 downto 0);
         flash_vpen : out  STD_LOGIC;
         flash_rp : out  STD_LOGIC;
-
-
-
         --serial
         RX:in std_logic;
         TX:out std_logic
@@ -70,7 +69,6 @@ ARCHITECTURE behavior OF top_cpu IS
          cpu_clk : OUT  std_logic;
          reset : IN  std_logic;
          is_dma_mem : IN  std_logic;
---         is_cancel : IN  std_logic;
          is_next_mem : OUT  std_logic;
          r_core : OUT  std_logic;
          w_core : OUT  std_logic;
@@ -81,7 +79,6 @@ ARCHITECTURE behavior OF top_cpu IS
     END COMPONENT;
 
     signal is_dma_mem : std_logic := '0';
-    signal is_cancel : std_logic := '0';
     signal data_mem : std_logic_vector(31 downto 0) := (others => '0');
 
     signal cpu_clk : std_logic;
@@ -127,6 +124,8 @@ BEGIN
     addr_final <= addr_core when is_dma_mem = '0' else flash_mem_addr;
     data_final <= data_core when is_dma_mem = '0' else data_flash;
 
+    flash_ce1 <= '0';
+    flash_ce2 <= '0';
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
@@ -184,8 +183,8 @@ BEGIN
 
     flash : FlashCtrl PORT MAP(
         ctrl_addr => flash_ctrl_addr,
-        data_in => flash_data_in,
-        data_out => flash_data_out,
+        data_in => flash_data_out,
+        data_out => flash_data_in,
         intr => flash_intr,
         r => flash_r,
         w => flash_w,
@@ -204,11 +203,10 @@ BEGIN
         mem_data_in => data_mem,
         mem_r => r_flash,
         mem_w => w_flash,
-        clk => cpu_clk,
+        clk => clk,
+        cpu_clk => cpu_clk,
         reset => reset
     );
-
-    is_dma_mem <= '0';
-    is_cancel <= '0';
+    
 
 END;

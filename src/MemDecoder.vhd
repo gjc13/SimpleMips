@@ -98,6 +98,8 @@ begin
 				when READ2 => 
 					if(visit_type = SERIAL) then
 						data_out <= serial_data_in;
+                    elsif (visit_type = FLASH) then
+                        data_out <= flash_data_in;
 					end if;
 				when others => 
                     null;
@@ -129,7 +131,7 @@ begin
             flash_addr_new := std_logic_vector(unsigned(addr) - FLASH_ADDR_START);
         elsif addr = X"bfd003f8" or addr = X"bfd003fc" then
             visit_type <= SERIAL;
-            serial_addr_new := std_logic_vector(unsigned(addr) - FLASH_ADDR_START);
+            serial_addr_new := std_logic_vector(unsigned(addr) - SERIAL_ADDR_START);
 		elsif (unsigned(addr) >= KSEG0_LO and unsigned(addr) < KSEG0_HI) then
 			-- kseg0 we strip off the first bit
 			visit_type <= SRAM;
@@ -258,6 +260,7 @@ begin
                 flash_w <= '0';
         end case;
         serial_data_out <= data_in;
+        flash_data_out <= data_in;
     end process;
 
 end Behavioral;
