@@ -70,7 +70,7 @@ ARCHITECTURE behavior OF top_cpu IS
          cpu_clk : OUT  std_logic;
          reset : IN  std_logic;
          is_dma_mem : IN  std_logic;
-         is_cancel : IN  std_logic;
+--         is_cancel : IN  std_logic;
          is_next_mem : OUT  std_logic;
          r_core : OUT  std_logic;
          w_core : OUT  std_logic;
@@ -134,7 +134,7 @@ BEGIN
         cpu_clk => cpu_clk,
         reset => reset,
         is_dma_mem => is_dma_mem,
-        is_cancel => is_cancel,
+        --is_cancel => is_cancel,
         is_next_mem => is_next_mem,
         r_core => r_core,
         w_core => w_core,
