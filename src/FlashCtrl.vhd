@@ -199,13 +199,8 @@ begin
             mem_w <= next_mem_w;
             pr_phase <= next_phase;
             pr_state <= next_state;
-            if w = '1' and r = '0' and ctrl_addr = CTRL_I then
-                flash_now_addr <= flash_start_reg(22 downto 0);
-                mem_now_addr <= mem_start_reg;
-            else
-                flash_now_addr <= next_flash_addr;
-                mem_now_addr <= next_mem_addr;
-            end if;
+            flash_now_addr <= next_flash_addr;
+            mem_now_addr <= next_mem_addr;
         end if;
     end process;
 
@@ -264,6 +259,8 @@ begin
                 else
                     next_state <= IDLE;
                 end if;
+                mem_addr_new := mem_start_reg;
+                flash_addr_new := flash_start_reg(22 downto 0);
             when CMD_START =>
                 next_state <= CMD_WRITE;
                 flash_we_new := '0';
