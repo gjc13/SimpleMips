@@ -90,7 +90,6 @@ begin
     need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
     force_cp0_write <= need_intr or is_eret; 
     badvaddr_new <= mem_addr;
-	need_intr_out <= need_intr;
 
     process(reset, clk)
     begin

@@ -48,7 +48,6 @@ entity RegFile is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
-			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end RegFile;

@@ -27,7 +27,6 @@ package CPUComponent is
 
     component IFPhase
     port (  is_bubble : in  STD_LOGIC;
-			need_intr : in  STD_LOGIC;
 			handler_addr : in  STD_LOGIC_VECTOR (31 downto 0);
             need_branch : in  STD_LOGIC;
             branch_pc : in STD_LOGIC_VECTOR (31 downto 0);

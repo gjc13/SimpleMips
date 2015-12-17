@@ -185,7 +185,6 @@ begin
 
     if_phase: IFPhase Port Map(
         is_bubble => is_bubble_if,
-		need_intr => need_intr,
 		handler_addr => handler_addr,
         need_branch => need_branch,
         branch_pc => branch_pc,

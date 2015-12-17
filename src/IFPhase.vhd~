@@ -64,11 +64,7 @@ begin
 		elsif(clk'event and clk = '1') then
 			--report "pc:";
 			--print_hex(pc_next);
-			if need_intr = '0' then
-				pc <= pc_next;
-			else
-				pc <= handler_addr;
-			end if;
+			pc <= pc_next;
 		end if;
 	end process;
 
