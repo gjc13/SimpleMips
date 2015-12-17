@@ -33,6 +33,7 @@ use work.Definitions.all;
 entity IFPhase is
     Port (  is_bubble : in  STD_LOGIC;
 			need_intr : in  STD_LOGIC;
+            is_eret : in STD_LOGIC;
 			handler_addr : in  STD_LOGIC_VECTOR (31 downto 0);
 			need_branch : in  STD_LOGIC;
 			branch_pc : in STD_LOGIC_VECTOR (31 downto 0);
@@ -62,13 +63,7 @@ begin
 		if(reset = '1') then
 			pc <= START;
 		elsif(clk'event and clk = '1') then
-			--report "pc:";
-			--print_hex(pc_next);
-			if need_intr = '0' then
-				pc <= pc_next;
-			else
-				pc <= handler_addr;
-			end if;
+            pc <= pc_next;
 		end if;
 	end process;
 
@@ -78,9 +73,13 @@ begin
 		npc_if <= std_logic_vector(unsigned(pc) + PC_MOVE);
 	end process;
 
-	process(pc, branch_pc, is_bubble, need_branch)
+	process(pc, branch_pc, is_bubble, 
+            need_branch, need_intr, is_eret,
+            handler_addr)
 	begin
-		if(is_bubble = '1' and need_branch = '1') then
+        if need_intr = '1' or is_eret = '1' then
+            pc_next <= handler_addr;
+		elsif(is_bubble = '1' and need_branch = '1') then
 			-- if the branch delay slot cannot be loaded because of structural collision,
 			-- we move back and execute the branch instruction again
 			pc_next <= std_logic_vector(unsigned(pc) - PC_MOVE);
@@ -93,9 +92,9 @@ begin
 		end if;
 	end process;
 
-	process(data_mem, is_bubble, reset)
+	process(data_mem, is_bubble, reset, need_intr)
 	begin
-		if(is_bubble = '1' or reset = '1') then
+		if(is_bubble = '1' or reset = '1' or need_intr = '1') then
 			inst_if <= X"00000000";
 		else
 			inst_if <= data_mem;

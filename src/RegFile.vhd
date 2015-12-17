@@ -37,10 +37,11 @@ entity RegFile is
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_data : out  STD_LOGIC_VECTOR (31 downto 0);
-            status_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
-            cause_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
-            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
-            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0):=X"00000000";
+            status_new : in STD_LOGIC_VECTOR (31 downto 0);
+            cause_new : in STD_LOGIC_VECTOR (31 downto 0);
+            badvaddr_new : in STD_LOGIC_VECTOR (31 downto 0);
+            entry_hi_new : in STD_LOGIC_VECTOR (31 downto 0);
+            epc_new : in STD_LOGIC_VECTOR (31 downto 0);
             force_cp0_write : in STD_LOGIC:='0';
             status : out STD_LOGIC_VECTOR (31 downto 0);
             cause : out STD_LOGIC_VECTOR (31 downto 0);
@@ -100,6 +101,7 @@ begin
                     regs(CAUSE_I) <= cause_new;
                     regs(BADVADDR_I) <= badvaddr_new;
                     regs(ENTRYHI_I) <= entry_hi_new;
+                    regs(EPC_I) <= epc_new;
                     if (is_regwrite = '1' and rd_id /= 0 and rd_id < 32) then
                         regs(rd_id) <= rd_data;
                     end if;
