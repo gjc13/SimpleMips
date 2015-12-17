@@ -72,3 +72,4 @@ dumpdata
 *.debug
 planAhead*
 *.tcl
+*~
