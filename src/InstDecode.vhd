@@ -356,6 +356,7 @@ begin
                             rd_id_new := rt_id_inst;
                             rt_id_new := rd_id_inst + 32;
                             rs_id_new := 0;
+									 report("mfc0");
                         when 4 => --mtc0
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
@@ -363,6 +364,7 @@ begin
                             rd_id_new := rd_id_inst + 32;
                             rt_id_new := rt_id_inst;
                             rs_id_new := 0;
+									 report("mtc0");
                         when 16 => --eret
                             is_eret_new := '1';
                         when others => NULL;

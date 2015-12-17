@@ -61,14 +61,14 @@ architecture Behavioral of RegFile is
     constant INDEX_I : integer := 32;
     constant ENTRY_LO0_I : integer := 34;
     constant ENTRY_LO1_I : integer := 35;
-    constant BADVADDR_I : integer := 41;
-    constant COUNT_I : integer := 42;
-    constant ENTRYHI_I : integer := 43;
-    constant COMPARE_I : integer := 44;
-    constant STATUS_I : integer := 45;
-    constant CAUSE_I : integer := 47;
-    constant EPC_I : integer := 48;
-    constant EBASE_I : integer := 49;
+    constant BADVADDR_I : integer := 40;
+    constant COUNT_I : integer := 41;
+    constant ENTRYHI_I : integer := 42;
+    constant COMPARE_I : integer := 43;
+    constant STATUS_I : integer := 44;
+    constant CAUSE_I : integer := 45;
+    constant EPC_I : integer := 46;
+    constant EBASE_I : integer := 47;
 begin
     count <= regs(COUNT_I);
 
