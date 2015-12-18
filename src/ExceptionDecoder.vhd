@@ -59,18 +59,22 @@ entity ExceptionDecoder is
             handler_addr : out  STD_LOGIC_VECTOR (31 downto 0);
             is_cancel : out  STD_LOGIC;
             force_cp0_write : out STD_LOGIC;
-			need_intr_out : out STD_LOGIC;
+				need_intr_out : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end ExceptionDecoder;
 
 architecture Behavioral of ExceptionDecoder is
     type State is (IDLE, CANCEL1, CANCEL2);
+	 type IntrState is (IDLE, OTHER_INTR, TLB);
+	 signal intr_state: IntrState;
+	 signal intr_next: IntrState;
     signal pr_state: State;
     signal next_state : State;
     signal is_cancel_fsm : std_logic;
     signal next_is_cancel : std_logic;
     signal need_intr : std_logic;
+	 signal to_tlb_debug : std_logic;
 
     constant IE : integer := 0;
     constant EXL : integer := 1;
@@ -87,18 +91,75 @@ architecture Behavioral of ExceptionDecoder is
     constant BRANCH_OFFSET : unsigned := X"00000004";
 
 begin 
-    need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
+    --need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
     force_cp0_write <= need_intr or is_eret; 
     badvaddr_new <= mem_addr;
-	need_intr_out <= need_intr;
+	 need_intr_out <= need_intr;
+	 
+	 process(intr_state, is_intr, status_old)
+	 begin
+	     case intr_state is
+		      when IDLE =>
+				    need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+				when OTHER_INTR =>
+				    need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+				when TLB =>
+				    need_intr <= '0';
+		  end case;
+	 end process;
+	
+	 process(tlb_intr, need_intr, is_eret)
+	 variable others_to_tlb: std_logic;
+	 begin
+		  to_tlb_debug <= others_to_tlb;
+	     if (reset = '1') then
+				intr_next <= IDLE;
+				others_to_tlb := '0';
+		  else
+		      case intr_state is
+				    when IDLE =>
+					     if (need_intr = '1') then
+						      if (tlb_intr = '1') then
+								    intr_next <= TLB;
+								else
+								    intr_next <= OTHER_INTR;
+								end if;
+						  else
+						      intr_next <= IDLE;
+						  end if;
+					 when OTHER_INTR =>
+					     if (need_intr = '1' and tlb_intr = '1') then
+								intr_next <= TLB;
+								others_to_tlb := '1';
+						  elsif (is_eret = '1') then
+						      intr_next <= IDLE;
+						  else
+						      intr_next <= OTHER_INTR;
+						  end if;
+					 when TLB =>
+					     if (is_eret = '1') then
+						      if (others_to_tlb = '1') then
+						          intr_next <= OTHER_INTR;
+									 others_to_tlb := '0';
+								else
+								    intr_next <= IDLE;
+								end if;
+						  else
+						      intr_next <= TLB;
+						  end if;
+				end case;
+		  end if;
+	 end process;
 
     process(reset, clk)
     begin
         if (reset = '1') then
             pr_state <= IDLE;
+				intr_state <= IDLE;
             is_cancel_fsm <= '0';
         elsif (clk'event and clk = '1') then
             pr_state <= next_state;
+				intr_state <= intr_next;
             is_cancel_fsm <= next_is_cancel;
         end if;
     end process;
@@ -135,11 +196,11 @@ begin
         end if;
     end process;
 
-    process(need_intr, is_eret)
+    process(need_intr, tlb_intr, is_eret)
         variable status : std_logic_vector(31 downto 0);
     begin
         status := status_old;
-        if need_intr = '1' then
+        if need_intr = '1' and tlb_intr = '1' then
             status(EXL) := '1';
         elsif is_eret = '1' then
             status(EXL) := '0';
