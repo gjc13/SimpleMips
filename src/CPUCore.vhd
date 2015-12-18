@@ -186,6 +186,7 @@ begin
     if_phase: IFPhase Port Map(
         is_bubble => is_bubble_if,
 		need_intr => need_intr,
+        is_eret => is_eret,
 		handler_addr => handler_addr,
         need_branch => need_branch,
         branch_pc => branch_pc,
@@ -333,6 +334,7 @@ begin
         cause_new => cause_new,
         badvaddr_new => badvaddr_new,
         entry_hi_new => entryhi_new,
+        epc_new => epc_new,
         force_cp0_write => force_cp0_write,
         status => status_old,
         cause => cause_old,
@@ -340,7 +342,7 @@ begin
         --compare => compare_old,
         ebase => ebase,
         epc => epc_old,
-	clk_intr => clk_intr,
+        clk_intr => clk_intr,
         clk => inner_cpu_clk,
         reset => reset
     );
