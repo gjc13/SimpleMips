@@ -27,7 +27,11 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
- 
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+use IEEE.NUMERIC_STD.ALL;
+use work.utilities.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL;
@@ -105,31 +109,38 @@ BEGIN
         reset <= '1';
         wait for 100 ns;	
         reset <= '0';
+		  report "testing kernel address map";
         vaddr <= X"80000044";
         wait for clk_period;
         assert tlb_intr = '0' report "tlb_intr error" severity error;
         assert paddr = X"80000044" report "paddr error" severity error;
+		  
+		  report "testing tlbwi";
         write_index <= 15;
         is_tlb_write <= '1';
-        entry_hi <= X"00100000";
-        entry_lo0 <= X"abcd0000";
-        entry_lo1 <= X"12340000";
+        entry_hi <= X"00020000";
+        entry_lo0 <= X"000abcde";
+        entry_lo1 <= X"00012345";
         wait for clk_period;
+		  		  
+		  report "testing tlbmiss intr";
         is_tlb_write <= '0';
-
         vaddr <= X"70000000";
         wait for clk_period;
         assert tlb_intr = '1' report "tlb_intr error" severity error;
 
-        vaddr <= X"0010001C";
+		  report "testing user addr map ppn0";
+        vaddr <= X"40000abc";
         wait for clk_period;
         assert tlb_intr = '0' report "tlb_intr error" severity error;
-        assert paddr = X"abcd001c" report "paddr error" severity error;
+		  print_hex(paddr);
+        assert paddr = X"abcdeabc" report "paddr error" severity error;
 
-        vaddr <= X"00102048";
+	     report "testing user addr map ppn1";
+        vaddr <= X"40001abc";
         wait for clk_period;
         assert tlb_intr = '0' report "tlb_intr error" severity error;
-        assert paddr = X"12340048" report "paddr error" severity error;
+        assert paddr = X"12345abc" report "paddr error" severity error;
 
         wait;
     end process;
