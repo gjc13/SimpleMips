@@ -74,7 +74,6 @@ architecture Behavioral of ExceptionDecoder is
     signal is_cancel_fsm : std_logic;
     signal next_is_cancel : std_logic;
     signal need_intr : std_logic;
-	 signal to_tlb_debug : std_logic;
 
     constant IE : integer := 0;
     constant EXL : integer := 1;
@@ -111,7 +110,6 @@ begin
 	 process(tlb_intr, need_intr, is_eret)
 	 variable others_to_tlb: std_logic;
 	 begin
-		  to_tlb_debug <= others_to_tlb;
 	     if (reset = '1') then
 				intr_next <= IDLE;
 				others_to_tlb := '0';

@@ -145,6 +145,7 @@ BEGIN
           rt_data => rt_data,
           status_new => status_new,
           cause_new => cause_new,
+			 epc_new => epc_new,
           badvaddr_new => badvaddr_new,
           entry_hi_new => entryhi_new,
           force_cp0_write => force_cp0_write,
@@ -191,7 +192,11 @@ BEGIN
         assert is_cancel = '0' report "is cancel error" severity error;
         assert force_cp0_write = '0' report "force_cp0_write error" severity error;
         is_intr <= '0';
+		  syscall_intr <= '0';
+		  is_eret <= '1';
         wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
 
         report "test syscall exception";
         rd_id <= STATUS_I;
@@ -211,14 +216,14 @@ BEGIN
         is_eret <= '0';
         is_in_slot <= '0';
         victim_addr <= X"80001004";
-        wait for 1ns;
+        wait for 1 ns;
         assert is_cancel = '1' report "is cancel error" severity error;
         assert force_cp0_write = '1' report "force_cp0_write error" severity error;
-        assert status_new = X"00400003"report "status_new error" severity error;
+        assert status_new = X"00400001"report "status_new error" severity error;
         assert epc_new = X"80001004" report "epc_new error" severity error;
         assert cause_new = X"00000020" report "cause_new error" severity error;
         assert handler_addr = X"BFC00380" report "handler_addr error" severity error;
-        wait for 9ns;
+        wait for 9 ns;
         assert is_cancel = '1' report "is cancel error" severity error;
         assert force_cp0_write = '0' report "force_cp0_write error" severity error;
         wait for clk_period;
@@ -241,7 +246,7 @@ BEGIN
         is_regwrite <= '0';
 
         wait for clk_period;
-
+		  
         report "test tlbwl intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000001";
@@ -249,6 +254,10 @@ BEGIN
         is_intr <= '0';
         tlb_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -268,7 +277,7 @@ BEGIN
         assert epc_new = X"80001000" report "epc_new error" severity error;
 
         wait for clk_period;
-
+        
         report "test tlbws intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000001";
@@ -276,6 +285,10 @@ BEGIN
         is_intr <= '0';
         tlb_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -299,6 +312,7 @@ BEGIN
 		  is_eret <= '0';
 		  wait for 10 ns;
 
+        
         report "test ri intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000001";
@@ -306,6 +320,10 @@ BEGIN
         is_intr <= '0';
         tlb_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -317,10 +335,11 @@ BEGIN
         ri_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000003"report "status_new error" severity error;
+        assert status_new = X"00000001"report "status_new error" severity error;
         assert cause_new = X"00000028" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
+        
         report "test clk intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000001";
@@ -328,6 +347,10 @@ BEGIN
         is_intr <= '0';
         ri_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -339,10 +362,11 @@ BEGIN
         clk_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000003"report "status_new error" severity error;
+        assert status_new = X"00000001"report "status_new error" severity error;
         assert cause_new = X"00008000" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
+        
         report "test com1 intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000001";
@@ -350,6 +374,10 @@ BEGIN
         is_intr <= '0';
         clk_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -361,10 +389,11 @@ BEGIN
         com1_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000003"report "status_new error" severity error;
+        assert status_new = X"00000001"report "status_new error" severity error;
         assert cause_new = X"00001000" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
+        
         report "test dma intr";
         rd_id <= STATUS_I;
         rd_data <= X"00000011";
@@ -372,6 +401,10 @@ BEGIN
         is_intr <= '0';
         com1_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -383,7 +416,7 @@ BEGIN
         dma_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000013"report "status_new error" severity error;
+        assert status_new = X"00000011"report "status_new error" severity error;
         assert cause_new = X"00000800" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
@@ -394,6 +427,10 @@ BEGIN
         is_intr <= '0';
         dma_intr <= '0';
         wait for clk_period;
+		  is_eret <= '1';
+        wait for clk_period;
+		  is_eret <= '0';
+		  wait for clk_period;
         rd_id <= CAUSE_I;
         rd_data <= X"00000000";
         is_regwrite <= '1';
@@ -405,7 +442,7 @@ BEGIN
         ps2_intr <= '1';
         is_in_slot <= '0';
         wait for clk_period;
-        assert status_new = X"00000013"report "status_new error" severity error;
+        assert status_new = X"00000011"report "status_new error" severity error;
         assert cause_new = X"00004000" report "cause_new error" severity error;
         assert handler_addr = X"80000180" report "handler_addr error" severity error;
 
@@ -420,7 +457,7 @@ BEGIN
         wait for 50 ns;
         is_eret <= '1';
 		  wait for 10 ns;
-        assert status_new = X"0000011" report "status_new error" severity error;
+        assert status_new = X"00000011" report "status_new error" severity error;
 		  
 		  wait for 10 ns;
 		  report("test intr_state");

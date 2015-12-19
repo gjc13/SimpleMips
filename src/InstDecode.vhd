@@ -375,6 +375,7 @@ begin
 							when 24 => --eret
 								is_eret_new := '1';
 							when others=>NULL;
+							
 							end case;
                         when others => NULL;
                     end case;
