@@ -77,10 +77,16 @@ ARCHITECTURE behavior OF top_cpu IS
          data_mem : IN  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
+    
+    component ClkDivider is
+        Port ( clk : in  STD_LOGIC;
+               clk_div : out  STD_LOGIC);
+    end component;
 
     signal is_dma_mem : std_logic := '0';
     signal data_mem : std_logic_vector(31 downto 0) := (others => '0');
 
+    signal clk_div : std_logic;
     signal cpu_clk : std_logic;
     signal is_next_mem : std_logic;
     signal r_core : std_logic;
@@ -126,10 +132,15 @@ BEGIN
 
     flash_ce1 <= '0';
     flash_ce2 <= '0';
+    
+    div : ClkDivider Port Map (
+        clk => clk,
+        clk_div => clk_div
+    );
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
-        clk => clk,
+        clk => clk_div,
         cpu_clk => cpu_clk,
         reset => reset,
         is_dma_mem => is_dma_mem,
@@ -163,7 +174,7 @@ BEGIN
         flash_r => flash_r,
         flash_w => flash_w,
         flash_addr => flash_ctrl_addr,
-        clk => clk,
+        clk => clk_div,
         cpu_clk => cpu_clk,
         reset => reset
     );
@@ -203,7 +214,7 @@ BEGIN
         mem_data_in => data_mem,
         mem_r => r_flash,
         mem_w => w_flash,
-        clk => clk,
+        clk => clk_div,
         cpu_clk => cpu_clk,
         reset => reset
     );

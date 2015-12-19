@@ -59,7 +59,7 @@ end FlashCtrl;
 architecture Behavioral of FlashCtrl is
     type State is (IDLE, CMD_START, CMD_WRITE, CMD_END, 
         READ_EN, READ_START, READ_LATCH, READ_MEM, READ_WAIT_MEM,
-        CHECK_START, CHECK_CMD, CHECK_BUF, CHECK_READ, CHECK_END,
+        CHECK_START, CHECK_CMD, CHECK_READ, CHECK_END,
         WRITE_WAIT_MEM, WRITE_MEM, WRITE_EN, WRITE_DATA, WRITE_WAIT);
     type Phase is (NOP, READ, ERASE1, ERASE2, CHECK, WRITE1, WRITE2);
     
@@ -208,7 +208,8 @@ begin
     process(ctrl_reg, pr_state, pr_phase, 
         flash_data, flash_now_addr, flash_end_reg, 
         mem_now_addr, cmd, databuf, status_reg, 
-        next_pend, mem_data_in)
+        next_pend, mem_data_in,
+        mem_start_reg, flash_start_reg)
         variable flash_addr_new : std_logic_vector(22 downto 0);
         variable flash_data_new : std_logic_vector(15 downto 0);
         variable mem_addr_new : std_logic_vector(31 downto 0);
@@ -354,22 +355,29 @@ begin
                 need_flash_z_new := '0';
                 next_state <= CHECK_CMD;
             when CHECK_CMD =>
-                next_state <= CHECK_BUF;
+                next_state <= CHECK_READ;
                 flash_data_new := cmd;
                 need_flash_z_new := '0';
-            when CHECK_BUF => 
-                next_state <= CHECK_READ;
-                flash_oe_new := '0';
-            when CHECK_READ =>
-                flash_oe_new := '0';
+            when CHECK_READ => 
                 next_state <= CHECK_END;
+                flash_oe_new := '0';
             when CHECK_END =>
                 if flash_data(7) = '1' then 
-                    next_state <= IDLE;
-                    phase_new := NOP;
-                    finished_new := '1';
+                    case pr_phase is 
+                        when WRITE1 | WRITE2 =>
+                            next_state <= WRITE_WAIT;
+                        when others =>
+                            next_state <= IDLE;
+                            phase_new := NOP;
+                            finished_new := '1';
+                    end case;
                 else
-                    next_state <= CMD_END;
+                    case pr_phase is 
+                        when WRITE1 | WRITE2 =>
+                            next_state <= WRITE_DATA;
+                        when others =>
+                            next_state <= CMD_END;
+                    end case;
                 end if;
             when WRITE_WAIT_MEM =>
                 if next_pend = '1' then
@@ -386,11 +394,11 @@ begin
                 need_mem_new := '1';
             when WRITE_EN =>
                 next_state <= WRITE_DATA;
-                flash_we_new := '0';
                 flash_data_new := flash_data;
                 need_flash_z_new := '0';
+                flash_we_new := '0';
             when WRITE_DATA =>
-                next_state <= WRITE_WAIT;
+                next_state <= CHECK_READ;
             when WRITE_WAIT =>
                 flash_addr_new := std_logic_vector(unsigned(flash_now_addr) + FLASH_ADDER);
                 if flash_addr_new = flash_end_reg(22 downto 0) then

@@ -74,7 +74,7 @@ begin
         end if;
     end process;
 
-    process(inst, npc, is_sb_slot)
+    process(inst, npc, is_sb_slot, l_is_mem_read)
         variable op_code : integer range 0 to 63;
         variable funct : integer range 0 to 63;
         variable rt_id_inst : integer range 0 to 127;

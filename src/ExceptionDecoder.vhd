@@ -133,7 +133,7 @@ begin
         end if;
     end process;
 
-    process(need_intr, is_eret)
+    process(need_intr, is_eret, status_old)
         variable status : std_logic_vector(31 downto 0);
     begin
         status := status_old;
@@ -145,7 +145,10 @@ begin
         status_new <= status;
     end process;
 
-    process(need_intr, is_in_slot, syscall_intr, clk_intr, com1_intr, dma_intr, ps2_intr, tlb_intr, ade_intr, mem_r, mem_w)
+    process(need_intr, is_in_slot, syscall_intr, 
+            clk_intr, com1_intr, dma_intr, ps2_intr, 
+            tlb_intr, ade_intr, mem_r, mem_w,
+            cause_old, ri_intr)
         variable cause : std_logic_vector(31 downto 0);
     begin
         cause := cause_old;
@@ -182,7 +185,7 @@ begin
         cause_new <= cause;
     end process;
 
-    process(need_intr, tlb_intr, mem_r, mem_w)
+    process(need_intr, tlb_intr, mem_r, mem_w, entryhi_old, mem_addr)
         variable entryhi : std_logic_vector(31 downto 0);
     begin
         entryhi := entryhi_old;

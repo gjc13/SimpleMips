@@ -49,7 +49,7 @@ end DataMasker;
 architecture Behavioral of DataMasker is
 
 begin
-    process(data_in, mem_op_code,data_old,data_out)
+    process(data_in, mem_op_code,data_old,data_out,addr)
     begin
         case mem_op_code is
             when MEM_W => 
