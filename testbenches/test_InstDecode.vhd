@@ -611,7 +611,9 @@ BEGIN
 		assert is_mem_read = '0' report "is_mem_read error" severity error;
         assert need_bubble = '0' report "need_bubble error" severity error;
 
-      wait;
+      wait for 10ns;
+		report "testing mtc0";
+		
    end process;
 
 END;

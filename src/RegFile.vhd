@@ -49,6 +49,10 @@ entity RegFile is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
+				index : out STD_LOGIC_VECTOR(31 downto 0);
+				entryHi : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
 			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
@@ -163,6 +167,26 @@ begin
             epc <= rd_data;
         else
             epc <= regs(EPC_I);
+			end if;
+		  if(is_regwrite = '1' and rd_id = INDEX_I) then
+            index <= rd_data;
+        else
+            index <= regs(INDEX_I);
+			end if;
+		  if(is_regwrite = '1' and rd_id = ENTRYHI_I) then
+            entryHi <= rd_data;
+        else
+            entryHi <= regs(ENTRYHI_I);
+        end if;
+		   if(is_regwrite = '1' and rd_id = ENTRY_LO0_I) then
+            entryLo0 <= rd_data;
+        else
+            entryLo0 <= regs(ENTRY_LO0_I);
+        end if;
+		   if(is_regwrite = '1' and rd_id = ENTRY_LO1_I) then
+            entryLo1 <= rd_data;
+        else
+            entryLo1 <= regs(ENTRY_LO1_I);
         end if;
     end process;
 end Behavioral;

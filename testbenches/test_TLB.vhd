@@ -45,7 +45,7 @@ ARCHITECTURE behavior OF test_TLB IS
  
     COMPONENT TLB
     PORT(
-         write_index : in  INTEGER range 0 to 31;
+         index : IN  std_logic_vector(31 downto 0);
          is_tlb_write : IN  std_logic;
          entry_hi : IN  std_logic_vector(31 downto 0);
          entry_lo0 : IN  std_logic_vector(31 downto 0);
@@ -60,7 +60,7 @@ ARCHITECTURE behavior OF test_TLB IS
     
 
    --Inputs
-   signal write_index : integer range 0 to 31 := 0;
+   signal write_index : std_logic_vector(31 downto 0) := (others => '0');
    signal is_tlb_write : std_logic := '0';
    signal entry_hi : std_logic_vector(31 downto 0) := (others => '0');
    signal entry_lo0 : std_logic_vector(31 downto 0) := (others => '0');
@@ -80,7 +80,7 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: TLB PORT MAP (
-          write_index => write_index,
+          index => write_index,
           is_tlb_write => is_tlb_write,
           entry_hi => entry_hi,
           entry_lo0 => entry_lo0,
@@ -116,7 +116,7 @@ BEGIN
         assert paddr = X"80000044" report "paddr error" severity error;
 		  
 		  report "testing tlbwi";
-        write_index <= 15;
+        write_index <= x"0000000f";
         is_tlb_write <= '1';
         entry_hi <= X"00020000";
         entry_lo0 <= X"000abcde";

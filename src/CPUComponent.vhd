@@ -127,6 +127,10 @@ package CPUComponent is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
+				index : out STD_LOGIC_VECTOR(31 downto 0);
+				entryHi : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
 			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
@@ -289,7 +293,19 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
-
+		
+	 component TLB is
+	 Port (  index : in STD_LOGIC_VECTOR (31 downto 0);
+            is_tlb_write : in STD_LOGIC;
+            entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
+            entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
+            entry_lo1 : in  STD_LOGIC_VECTOR (31 downto 0);
+            vaddr : in  STD_LOGIC_VECTOR (31 downto 0);
+            paddr : out  STD_LOGIC_VECTOR (31 downto 0);
+            tlb_intr : out  STD_LOGIC;
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
+	 end component;
 end CPUComponent;
 
 package body CPUComponent is

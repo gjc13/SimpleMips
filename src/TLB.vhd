@@ -31,7 +31,8 @@ use work.utilities.all;
 --use UNISIM.VComponents.all;
 
 entity TLB is
-    Port (  write_index : in  INTEGER range 0 to 31;
+    Port (  index: in  STD_LOGIC_VECTOR (31 downto 0);
+	 
             is_tlb_write : in STD_LOGIC;
             entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
             entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -46,9 +47,10 @@ end TLB;
 architecture Behavioral of TLB is
     type TLBRegType is array(0 to 31) of std_logic_vector(63 downto 0);
     constant VPN_OFFSET : unsigned(19 downto 0) := X"00001";
-
+	signal write_index : INTEGER range 0 to 31;
     signal tlbEntries : TLBRegType;
 begin
+	write_index <= to_integer(unsigned(index(4 downto 0)));
     process(clk, reset)
     begin
         if(reset = '1') then
@@ -68,7 +70,7 @@ begin
         variable intr : std_logic;
     begin
         intr := '1';
-        if (vaddr and X"80000000") /= X"00000000" then
+        if (vaddr and X"80000000") /= X"00000000" or vaddr = x"bfd003f8" or vaddr = x"bfd003fc" then
             paddr <= vaddr;
             tlb_intr <= '0';
         else
