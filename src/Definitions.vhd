@@ -8,8 +8,8 @@ package Definitions is
 	constant ALU_AND : INTEGER := 3;
 	constant ALU_OR  : INTEGER := 4;
 	constant ALU_NOT : INTEGER := 5;
-	constant ALU_SHL : INTEGER := 6;
-	constant ALU_SHR : INTEGER := 7;
+	constant ALU_XOR : INTEGER := 6;
+	constant ALU_SRAV : INTEGER := 7;
 	constant ALU_SLL : INTEGER := 8;
 	constant ALU_SRA : INTEGER := 9;
 	constant ALU_SRL : INTEGER := 10;

@@ -66,7 +66,7 @@ package CPUComponent is
             is_reg_inst : out  STD_LOGIC;
             is_mem_read : out  STD_LOGIC;
             is_mem_write : out  STD_LOGIC;
-				l_is_mem_read : in STD_LOGIC;
+            l_is_mem_read : in STD_LOGIC;
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
@@ -77,6 +77,7 @@ package CPUComponent is
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
             is_eret : out STD_LOGIC;
+            is_syscall : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;

@@ -57,6 +57,7 @@ entity InstDecode is
             immediate : out STD_LOGIC_VECTOR(31 downto 0);
             need_bubble : out STD_LOGIC;
             is_eret : out STD_LOGIC;
+            is_syscall : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end InstDecode;
@@ -108,6 +109,7 @@ begin
         variable need_bubble_new : std_logic;
         variable is_eret_new : std_logic;
         variable is_tlb_write_new : std_logic;
+        variable is_syscall_new : std_logic;
 
     begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
@@ -141,6 +143,7 @@ begin
         need_bubble_new := '0';
         is_eret_new := '0';
         is_tlb_write_new := '0';
+        is_syscall_new := '0';
         
         if is_sb_slot = '1' then
             is_mem_write_new := '1';
@@ -151,7 +154,7 @@ begin
         else
             case op_code is
                 when 0 =>   --nop, jr, jalr, addu, slt, and, subu, sltu, sra, srl, sllv, srlv, nor, or
-                            --mfhi, mflo,  mthi, mtlo
+                            --mfhi, mflo,  mthi, mtlo, xor, srav, syscall
                     case funct is 
                         when 0 => --nop, sll
                             is_reg_inst_new := '1';
@@ -182,6 +185,11 @@ begin
                             is_reg_write_new := '1';
                             alu_opcode_new := ALU_SRLV;
                             rd_id_new := rd_id_inst;
+                        when 7 => --srav
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_SRAV;
+                            rd_id_new := rd_id_inst;
                         when 8 => --jr
                             is_jump_new := '1';
                             is_jr_new := '1';
@@ -196,6 +204,8 @@ begin
                             is_reg_write_new := '1';
                             alu_opcode_new := ALU_ADD;
                             rd_id_new := rd_id_inst;
+                        when 12 => --syscall
+                            is_syscall_new := '1';
                         when 16 => --mfhi
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
@@ -243,6 +253,11 @@ begin
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
                             alu_opcode_new := ALU_OR;
+                            rd_id_new := rd_id_inst;
+                        when 38 => --xor
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+                            alu_opcode_new := ALU_XOR;
                             rd_id_new := rd_id_inst;
                         when 39 => --nor
                             is_reg_inst_new := '1';
@@ -344,6 +359,12 @@ begin
                     rd_id_new := rt_id_inst;
                     immediate_new := X"0000" & inst(15 downto 0);
 
+                when 14 => --xori
+					alu_opcode_new := ALU_XOR;
+                    is_reg_write_new := '1';
+                    rd_id_new := rt_id_inst;
+                    immediate_new := X"0000" & inst(15 downto 0);
+
                 when 15 => --lui
                     alu_opcode_new := ALU_ADD;
                     is_reg_write_new := '1';
@@ -440,12 +461,13 @@ begin
         alu_opcode <= alu_opcode_new;
         rd_id <= rd_id_new;
         rt_id <= rt_id_new;
-		  rs_id <= rs_id_new;
+        rs_id <= rs_id_new;
         immediate <= immediate_new;
         next_is_sb_slot <= is_sb_new;
         need_bubble <= need_bubble_new;
         is_eret <= is_eret_new;
         is_tlb_write <= is_tlb_write_new;
+        is_syscall <= is_syscall_new;
     end process;
 
 end Behavioral;
