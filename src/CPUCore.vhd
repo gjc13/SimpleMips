@@ -47,7 +47,6 @@ architecture Behavioral of CPUCore is
 
     signal sub_clk: std_logic := '0';
     signal inner_cpu_clk: std_logic := '0';
-    
     signal is_bubble_if : std_logic;
     signal is_bubble: std_logic;
     signal need_branch: std_logic;
@@ -84,6 +83,7 @@ architecture Behavioral of CPUCore is
     signal rd_id_id : integer range 0 to 127;
     signal immediate_id : std_logic_vector(31 downto 0);
     signal inst_bubble_id : std_logic;
+    signal is_tlb_write_id : std_logic;
 
     signal npc_ex : std_logic_vector(31 downto 0);
     signal inst_ex : std_logic_vector(31 downto 0);
@@ -102,6 +102,7 @@ architecture Behavioral of CPUCore is
     signal rs_id_ex : integer range 0 to 127;
     signal rt_id_ex : integer range 0 to 127;
     signal inst_bubble_ex : std_logic;
+    signal is_tlb_write_ex : std_logic;
 
     signal alu_lhs : std_logic_vector(31 downto 0);
     signal alu_rhs : std_logic_vector(31 downto 0);
@@ -120,6 +121,7 @@ architecture Behavioral of CPUCore is
     signal is_mem_write_mem : std_logic;
     signal is_reg_write_mem : std_logic;
     signal rd_id_mem : integer range 0 to 127;
+    signal is_tlb_write_mem : std_logic;
 
     signal data_in_masked : std_logic_vector(31 downto 0);
     signal data_out_masked : std_logic_vector(31 downto 0);
@@ -128,11 +130,18 @@ architecture Behavioral of CPUCore is
     signal result_wb : std_logic_vector(31 downto 0);
     signal is_reg_write_wb : std_logic;
     signal rd_id_wb : integer range 0 to 127;
+    signal is_tlb_write_wb : std_logic;
 
     signal status_old : std_logic_vector(31 downto 0);
     signal cause_old : std_logic_vector(31 downto 0);
     signal epc_old : std_logic_vector(31 downto 0);
-    signal entryhi_old : std_logic_vector(31 downto 0);
+    --signal entryhi_old : std_logic_vector(31 downto 0);
+    signal index_old : std_logic_vector(31 downto 0);
+    signal entryHi_old : std_logic_vector(31 downto 0);
+    signal entryLo0_old : std_logic_vector(31 downto 0);
+    signal entryLo1_old : std_logic_vector(31 downto 0);
+	 
+	 
     signal ebase : std_logic_vector(31 downto 0);
     signal is_intr : std_logic;
     signal syscall_intr : std_logic;
@@ -153,10 +162,12 @@ architecture Behavioral of CPUCore is
     signal is_cancel : std_logic;
     signal force_cp0_write : std_logic;
 	signal need_intr : std_logic;
-
+	
     signal is_in_slot : std_logic;
     signal victim_pc : std_logic_vector(31 downto 0);
     
+	 signal vaddr: std_logic_vector(31 downto 0);
+	 
     constant LINK_OFFSET : unsigned := X"00000004";
 begin
     cpu_clk <= inner_cpu_clk;
@@ -177,7 +188,6 @@ begin
     dma_intr <= '0';
     ps2_intr <= '0';
     ri_intr <= '0';
-    tlb_intr <= '0';
     ade_intr <= '0';
 
     if_phase: IFPhase Port Map(
@@ -231,6 +241,7 @@ begin
         need_bubble => inst_bubble_id,
         immediate => immediate_id,
         is_eret => is_eret,
+        is_tlb_write => is_tlb_write_id,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -297,6 +308,8 @@ begin
         rd_id_ex => rd_id_ex,
         inst_bubble_id => inst_bubble_id,
         inst_bubble_ex => inst_bubble_ex,
+        is_tlb_write_id => is_tlb_write_id,
+        is_tlb_write_ex => is_tlb_write_ex,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -335,6 +348,10 @@ begin
         force_cp0_write => force_cp0_write,
         status => status_old,
         cause => cause_old,
+		  index => index_old,
+		  entryHi => entryHi_old,
+		  entryLo0 => entryLo0_old,
+		  entryLo1 => entryLo1_old,
         --count => count_old,
         --compare => compare_old,
         ebase => ebase,
@@ -367,6 +384,8 @@ begin
         is_reg_write_mem => is_reg_write_mem,
         rd_id_ex => rd_id_ex,
         rd_id_mem => rd_id_mem,
+        is_tlb_write_ex => is_tlb_write_ex,
+        is_tlb_write_mem => is_tlb_write_mem,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -380,7 +399,7 @@ begin
         addr_pc => addr_pc,
         addr_mem => result_mem,
         is_bubble => is_bubble,
-        addr_core => addr_core,
+        addr_core => vaddr,
         r_core => r_core,
         w_core => w_core
     );
@@ -402,6 +421,8 @@ begin
         is_reg_write_wb => is_reg_write_wb,
         rd_id_mem => rd_id_mem,
         rd_id_wb => rd_id_wb,
+        is_tlb_write_mem => is_tlb_write_mem,
+        is_tlb_write_wb => is_tlb_write_wb,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -416,7 +437,7 @@ begin
         status_old => status_old,
         cause_old => cause_old,
         epc_old => epc_old,
-        entryhi_old => entryhi_old,
+        entryhi_old => entryHi_old,
         ebase => ebase,
         is_intr => is_intr,
         syscall_intr => syscall_intr,
@@ -449,6 +470,19 @@ begin
         clk => inner_cpu_clk,
         reset => reset
     );
+
+	 TLB_uut: tlb Port Map(
+		index => index_old,
+		is_tlb_write => is_tlb_write_wb,
+		entry_hi =>entryHi_old,
+        entry_lo0 =>entryLo0_old,
+        entry_lo1 =>entryLo1_old,
+		vaddr => vaddr,
+        paddr => addr_core,
+		tlb_intr =>tlb_intr,
+		clk => inner_cpu_clk,
+		reset => reset
+	 );
 
     --clk dividers
     sub_clk_process :process(clk)

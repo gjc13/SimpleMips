@@ -90,14 +90,14 @@ ARCHITECTURE behavior OF test_ExceptionDecoder IS
     constant INDEX_I : integer := 32;
     constant ENTRY_LO0_I : integer := 34;
     constant ENTRY_LO1_I : integer := 35;
-    constant BADVADDR_I : integer := 41;
-    constant COUNT_I : integer := 42;
-    constant ENTRYHI_I : integer := 43;
-    constant COMPARE_I : integer := 44;
-    constant STATUS_I : integer := 45;
-    constant CAUSE_I : integer := 47;
-    constant EPC_I : integer := 48;
-    constant EBASE_I : integer := 49;
+    constant BADVADDR_I : integer := 40;
+    constant COUNT_I : integer := 41;
+    constant ENTRYHI_I : integer := 42;
+    constant COMPARE_I : integer := 43;
+    constant STATUS_I : integer := 44;
+    constant CAUSE_I : integer := 45;
+    constant EPC_I : integer := 46;
+    constant EBASE_I : integer := 47;
 
 BEGIN
  
@@ -292,6 +292,12 @@ BEGIN
         assert status_new = X"00000003"report "status_new error" severity error;
         assert cause_new = X"8000000c" report "cause_new error" severity error;
         assert handler_addr = X"80000000" report "handler_addr error" severity error;
+		  tlb_intr <= '0';
+		  is_intr <= '0';
+		  is_eret <= '1';
+		  wait for 10 ns;
+		  is_eret <= '0';
+		  wait for 10 ns;
 
         report "test ri intr";
         rd_id <= STATUS_I;
@@ -413,8 +419,55 @@ BEGIN
         is_intr <= '0';
         wait for 50 ns;
         is_eret <= '1';
+		  wait for 10 ns;
         assert status_new = X"0000011" report "status_new error" severity error;
+		  
+		  wait for 10 ns;
+		  report("test intr_state");
+		  rd_id <= STATUS_I;
+        rd_data <= X"00000011";
+        is_regwrite <= '1';
+        is_intr <= '0';
+        dma_intr <= '0';
+        wait for clk_period;
+        rd_id <= CAUSE_I;
+        rd_data <= X"00000000";
+        is_regwrite <= '1';
+        wait for clk_period;
+        is_regwrite <= '0';
+		  ps2_intr <= '0';
+		  is_eret <= '0';
 
+        wait for 50 ns;
+        is_intr <= '1'; 
+		  tlb_intr <= '1';
+		  wait for 10 ns;
+		  report("tlb");
+		  tlb_intr <= '0';
+		  is_intr <= '0';
+		  is_eret <= '1';
+		  wait for 10 ns;
+		  report("idle");
+		  clk_intr <= '1';
+		  is_intr <= '1';
+		  is_eret <= '0';
+		  wait for 10 ns;
+		  report("other_intr");
+		  tlb_intr <= '1';
+		  wait for 20 ns;
+		  report("tlb");
+		  tlb_intr <= '0';
+		  is_eret <= '1';
+		  wait for 10 ns;
+		  report("other_intr");
+		  is_eret <= '0';
+		  wait for 10 ns;
+		  clk_intr <= '0';
+		  is_intr <= '0';
+		  is_eret <= '1';
+		  wait for 10 ns;
+		  report("idle");
+		  
         wait;
     end process;
 END;

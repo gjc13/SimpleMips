@@ -31,7 +31,8 @@ use work.utilities.all;
 --use UNISIM.VComponents.all;
 
 entity TLB is
-    Port (  write_index : in  INTEGER range 0 to 31;
+    Port (  index: in  STD_LOGIC_VECTOR (31 downto 0);
+	 
             is_tlb_write : in STD_LOGIC;
             entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
             entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -44,31 +45,23 @@ entity TLB is
 end TLB;
 
 architecture Behavioral of TLB is
-    type TLBRegType is array(0 to 31) of std_logic_vector(127 downto 0);
-
-    subtype ENTRYHI is integer range 127 downto 96;
-    subtype ENTRYLO0 is integer range 63 downto 32;
-    subtype ENTRYLO1 is integer range 31 downto 0;
-
-    subtype PAGENUMBER is integer range 31 downto 13;
-    subtype PAGEOFFSET is integer range 12 downto 0;
-
-    constant PAGEMASK : std_logic_vector(31 downto 0) := X"00000000";
+    type TLBRegType is array(0 to 31) of std_logic_vector(63 downto 0);
     constant VPN_OFFSET : unsigned(19 downto 0) := X"00001";
-
+	signal write_index : INTEGER range 0 to 31;
     signal tlbEntries : TLBRegType;
-
 begin
+	write_index <= to_integer(unsigned(index(4 downto 0)));
     process(clk, reset)
     begin
         if(reset = '1') then
             for i in tlbEntries'range loop
-                tlbEntries(i) <= (127 => '1',others => '0');
+                tlbEntries(i) <= (63 => '1',others => '0');
             end loop;
         elsif(clk'event and clk = '1') then
-            if(is_tlb_write = '1') then
-                tlbEntries(write_index) <= entry_hi & PAGEMASK & entry_lo0 & entry_lo1;
-            end if;
+            if(is_tlb_write = '1') then             
+					 tlbEntries(write_index) <= entry_hi(18 downto 0) & '0' & entry_lo0(19 downto 0) & '1' & entry_lo1(19 downto 0) & '1' & "00";
+			
+				end if;
         end if;
     end process;
 
@@ -77,23 +70,19 @@ begin
         variable intr : std_logic;
     begin
         intr := '1';
-        if (vaddr and X"80000000") /= X"00000000" then
+        if (vaddr and X"80000000") /= X"00000000" or vaddr = x"bfd003f8" or vaddr = x"bfd003fc" then
             paddr <= vaddr;
             tlb_intr <= '0';
         else
             for i in tlbEntries'range loop
-                hi := tlbEntries(i)(ENTRYHI);
-                if vaddr(PAGENUMBER) = hi(PAGENUMBER) then
+                if vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '0' then
                     report "found tlb 0";
-                    print_hex(tlbEntries(i)(ENTRYLO0));
-                    print_hex(tlbEntries(i)(ENTRYLO0)(PAGENUMBER) & vaddr(PAGEOFFSET));
-                    paddr <= tlbEntries(i)(ENTRYLO0)(PAGENUMBER) & vaddr(PAGEOFFSET);
+                    paddr <= tlbEntries(i)(43 downto 24) & vaddr(11 downto 0);					  
                     intr := '0';
                     exit;
-                elsif vaddr(PAGENUMBER) = std_logic_vector(unsigned(hi(PAGENUMBER)) + VPN_OFFSET) then
+                elsif vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '1' then
                     report "found tlb 1";
-                    print_hex(tlbEntries(i)(ENTRYLO1));
-                    --paddr <= tlbEntries(i)(ENTRYLO1)(PAGENUMBER) & vaddr(PAGEOFFSET);
+                    paddr <= tlbEntries(i)(22 downto 3) & vaddr(11 downto 0);					  
                     intr := '0';
                     exit;
                 end if;

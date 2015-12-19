@@ -54,6 +54,7 @@ package CPUComponent is
     component InstDecode
     Port (  inst : in  STD_LOGIC_VECTOR (31 downto 0);
             npc : in STD_LOGIC_VECTOR (31 downto 0);
+            is_tlb_write : out  STD_LOGIC;
             is_jump : out  STD_LOGIC;
             jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
             is_jr   : out  STD_LOGIC;
@@ -127,6 +128,10 @@ package CPUComponent is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
+				index : out STD_LOGIC_VECTOR(31 downto 0);
+				entryHi : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
+				entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
 			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
@@ -167,6 +172,8 @@ package CPUComponent is
             rd_id_ex : out integer range 0 to 127;
             inst_bubble_id : in STD_LOGIC;
             inst_bubble_ex : out STD_LOGIC;
+            is_tlb_write_id : in STD_LOGIC;
+            is_tlb_write_ex : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -212,6 +219,8 @@ package CPUComponent is
             is_reg_write_mem : out  STD_LOGIC;
             rd_id_ex : in  integer range 0 to 127;
             rd_id_mem : out integer range 0 to 127; 
+            is_tlb_write_ex : in STD_LOGIC;
+            is_tlb_write_mem : out STD_LOGIC;
             clk : in  STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -242,6 +251,8 @@ package CPUComponent is
             is_reg_write_wb : out  STD_LOGIC;
             rd_id_mem : in  integer range 0 to 127;
             rd_id_wb : out  integer range 0 to 127;
+            is_tlb_write_mem : in STD_LOGIC;
+            is_tlb_write_wb : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -289,7 +300,19 @@ package CPUComponent is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
-
+		
+	 component TLB is
+	 Port (  index : in STD_LOGIC_VECTOR (31 downto 0);
+            is_tlb_write : in STD_LOGIC;
+            entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
+            entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
+            entry_lo1 : in  STD_LOGIC_VECTOR (31 downto 0);
+            vaddr : in  STD_LOGIC_VECTOR (31 downto 0);
+            paddr : out  STD_LOGIC_VECTOR (31 downto 0);
+            tlb_intr : out  STD_LOGIC;
+            clk : in STD_LOGIC;
+            reset : in STD_LOGIC);
+	 end component;
 end CPUComponent;
 
 package body CPUComponent is

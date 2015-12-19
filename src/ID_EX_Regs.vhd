@@ -64,6 +64,8 @@ entity ID_EX_Regs is
 			rd_id_ex : out integer range 0 to 127;
             inst_bubble_id : in STD_LOGIC;
             inst_bubble_ex : out STD_LOGIC;
+            is_tlb_write_id : in STD_LOGIC;
+            is_tlb_write_ex : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset: in STD_LOGIC);
 end ID_EX_Regs;
@@ -97,6 +99,7 @@ begin
 			rt_id_ex <= rt_id_id;
 			rd_id_ex <= rd_id_id;
             inst_bubble_ex <= inst_bubble_id;
+            is_tlb_write_ex <= is_tlb_write_id;
 		end if;
 	end process;
 end Behavioral;
