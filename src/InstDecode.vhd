@@ -372,8 +372,9 @@ begin
 							case funct is
 							when 2 => --tlbwi
 								is_tlb_write_new := '1';
-							when 16 => --eret
+							when 24 => --eret
 								is_eret_new := '1';
+							when others => NULL;
 							end case;
                         when others => NULL;
                     end case;
