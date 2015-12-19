@@ -58,7 +58,12 @@ begin
                 tlbEntries(i) <= (63 => '1',others => '0');
             end loop;
         elsif(clk'event and clk = '1') then
-            if(is_tlb_write = '1') then             
+            if(is_tlb_write = '1') then      
+					 report "tlbwi";
+					 print_hex(entry_hi);
+					 print_hex(entry_lo0);
+					 print_hex(entry_lo1);
+					 
 					 tlbEntries(write_index) <= entry_hi(18 downto 0) & '0' & entry_lo0(19 downto 0) & '1' & entry_lo1(19 downto 0) & '1' & "00";
 			
 				end if;
@@ -77,8 +82,10 @@ begin
             for i in tlbEntries'range loop
                 if vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '0' then
                     report "found tlb 0";
+						  
                     paddr <= tlbEntries(i)(43 downto 24) & vaddr(11 downto 0);					  
-                    intr := '0';
+                    print_hex(tlbEntries(i)(43 downto 24) & vaddr(11 downto 0));
+						  intr := '0';
                     exit;
                 elsif vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '1' then
                     report "found tlb 1";
