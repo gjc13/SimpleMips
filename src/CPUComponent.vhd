@@ -311,7 +311,8 @@ package CPUComponent is
             paddr : out  STD_LOGIC_VECTOR (31 downto 0);
             tlb_intr : out  STD_LOGIC;
             clk : in STD_LOGIC;
-            reset : in STD_LOGIC);
+            reset : in STD_LOGIC;
+				en:in STD_LOGIC);
 	 end component;
 end CPUComponent;
 

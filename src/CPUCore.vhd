@@ -168,10 +168,15 @@ architecture Behavioral of CPUCore is
     
 	 signal vaddr: std_logic_vector(31 downto 0);
 	 
+	 signal result_ex_final :std_logic_vector(31 downto 0);
+	 signal result_ex_tlb:std_logic_vector(31 downto 0);
+	 signal is_mem_ex:std_logic;
     constant LINK_OFFSET : unsigned := X"00000004";
 begin
     cpu_clk <= inner_cpu_clk;
-    is_next_mem <= is_mem_write_ex or is_mem_read_ex;
+    is_mem_ex<= is_mem_read_ex or is_mem_write_ex;
+	 is_next_mem <= is_mem_write_ex or is_mem_read_ex;
+	 result_ex_final <= result_ex_tlb when is_mem_ex = '1' else result_ex;
     result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
     is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
     is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
@@ -399,7 +404,7 @@ begin
         addr_pc => addr_pc,
         addr_mem => result_mem,
         is_bubble => is_bubble,
-        addr_core => vaddr,
+        addr_core => addr_core,
         r_core => r_core,
         w_core => w_core
     );
@@ -431,9 +436,10 @@ begin
         is_in_slot => is_in_slot,
 		need_intr_out => need_intr,
         victim_addr => victim_pc,
-        mem_addr => result_mem,
-        mem_r => is_mem_read_mem,
-        mem_w => is_mem_write_mem,
+		  --??
+        mem_addr => result_ex,
+        mem_r => is_mem_read_ex,
+        mem_w => is_mem_write_ex,
         status_old => status_old,
         cause_old => cause_old,
         epc_old => epc_old,
@@ -462,7 +468,7 @@ begin
     );
 
     victim_finder : VictimFinder Port Map(
-        now_pc => npc_id,	--??
+        now_pc => addr_pc,
         is_bubble => is_bubble,
         pre_branch => is_branch_id,
         victim_pc => victim_pc,
@@ -477,11 +483,12 @@ begin
 		entry_hi =>entryHi_old,
         entry_lo0 =>entryLo0_old,
         entry_lo1 =>entryLo1_old,
-		vaddr => vaddr,
-        paddr => addr_core,
+		vaddr => result_ex,
+        paddr => result_ex_tlb,
 		tlb_intr =>tlb_intr,
 		clk => inner_cpu_clk,
-		reset => reset
+		reset => reset,
+		en =>is_mem_ex
 	 );
 
     --clk dividers

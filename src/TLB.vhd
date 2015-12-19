@@ -41,7 +41,8 @@ entity TLB is
             paddr : out  STD_LOGIC_VECTOR (31 downto 0);
             tlb_intr : out  STD_LOGIC;
             clk : in STD_LOGIC;
-            reset : in STD_LOGIC);
+            reset : in STD_LOGIC;
+				en:in STD_LOGIC);
 end TLB;
 
 architecture Behavioral of TLB is
@@ -60,9 +61,11 @@ begin
         elsif(clk'event and clk = '1') then
             if(is_tlb_write = '1') then      
 					 report "tlbwi";
+					 --report write_index;
+					 print_hex(index);
 					 print_hex(entry_hi);
-					 print_hex(entry_lo0);
-					 print_hex(entry_lo1);
+					 --print_hex(entry_lo0);
+					 --print_hex(entry_lo1);
 					 
 					 tlbEntries(write_index) <= entry_hi(18 downto 0) & '0' & entry_lo0(19 downto 0) & '1' & entry_lo1(19 downto 0) & '1' & "00";
 			
@@ -70,7 +73,7 @@ begin
         end if;
     end process;
 
-    process(vaddr, tlbEntries) 
+    process(vaddr, tlbEntries,en) 
         variable hi : std_logic_vector(31 downto 0);
         variable intr : std_logic;
     begin
@@ -81,21 +84,25 @@ begin
         else
             for i in tlbEntries'range loop
                 if vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '0' then
-                    report "found tlb 0";
-						  
+                    --report "found tlb 0";
+						  --print_hex(index);
                     paddr <= tlbEntries(i)(43 downto 24) & vaddr(11 downto 0);					  
-                    print_hex(tlbEntries(i)(43 downto 24) & vaddr(11 downto 0));
+                    --print_hex(tlbEntries(i)(43 downto 24) & vaddr(11 downto 0));
 						  intr := '0';
                     exit;
                 elsif vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '1' then
-                    report "found tlb 1";
+                    --report "found tlb 1";
                     paddr <= tlbEntries(i)(22 downto 3) & vaddr(11 downto 0);					  
                     intr := '0';
                     exit;
                 end if;
             end loop;
         end if;
-        tlb_intr <= intr;
+		  if(en = '1') then
+				tlb_intr <= intr;
+			else
+				tlb_intr<='0';
+			end if;
     end process;
 
 end Behavioral;
