@@ -127,7 +127,7 @@ ARCHITECTURE behavior OF test_cpu IS
     signal flash_mem_addr : std_logic_vector(31 downto 0);
 
     -- Clock period definitions
-    constant clk_period : time := 20 ns;
+    constant clk_period : time := 4 ns;
  
 BEGIN
     r_final <= r_core when is_dma_mem = '0' else r_flash;
