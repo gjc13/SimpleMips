@@ -26,6 +26,7 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
+use work.Peripherals.all;
  
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -53,33 +54,6 @@ ARCHITECTURE behavior OF test_cpu IS
         );
     END COMPONENT;
 
-    component MemDecoder
-    port(
-        addr : IN  std_logic_vector(31 downto 0);
-        r : IN  std_logic;
-        w : IN  std_logic;
-        data_in : IN  std_logic_vector(31 downto 0);
-        data_out : OUT  std_logic_vector(31 downto 0);
-
-        --device interface with sram
-        sram_data:inout std_logic_vector(31 downto 0);
-        sram_addr:out std_logic_vector(19 downto 0);
-        ce:out std_logic:='0';
-        oe:out std_logic:='1';
-        we:out std_logic:='1';
-
-        --device interface with serial
-        serial_data_out:out std_logic_vector(31 downto 0);
-        serial_data_in:in std_logic_vector(31 downto 0);
-        serial_r:out std_logic;
-        serial_w:out std_logic;
-        serial_addr:out std_logic_vector(31 downto 0);
-
-        clk : in std_logic;
-        cpu_clk : in std_logic;
-        reset : in std_logic);
-    end component;
-
     COMPONENT mem_stub 
     Port (  addr : in  STD_LOGIC_VECTOR (19 downto 0);
             data : inout  STD_LOGIC_VECTOR (31 downto 0);
@@ -104,7 +78,6 @@ ARCHITECTURE behavior OF test_cpu IS
     signal clk : std_logic := '0';
     signal reset : std_logic := '0';
     signal is_dma_mem : std_logic := '0';
-    signal is_cancel : std_logic := '0';
     signal data_mem : std_logic_vector(31 downto 0) := (others => '0');
 
     --Outputs
@@ -114,6 +87,11 @@ ARCHITECTURE behavior OF test_cpu IS
     signal w_core : std_logic;
     signal addr_core : std_logic_vector(31 downto 0);
     signal data_core : std_logic_vector(31 downto 0);
+    signal r_final : std_logic;
+    signal w_final : std_logic;
+    signal addr_final : std_logic_vector(31 downto 0);
+    signal data_final : std_logic_vector(31 downto 0);
+
 
     signal ce : std_logic;
     signal oe : std_logic;
@@ -122,18 +100,41 @@ ARCHITECTURE behavior OF test_cpu IS
     signal serial_data_out : std_logic_vector(31 downto 0);
     signal serial_data_in : std_logic_vector(31 downto 0);
     signal serial_addr : std_logic_vector(31 downto 0);
+    signal flash_data_out : std_logic_vector(31 downto 0);
+    signal flash_data_in : std_logic_vector(31 downto 0);
+    signal flash_ctrl_addr : std_logic_vector(31 downto 0);
     signal data_sram : std_logic_vector(31 downto 0);
     signal addr_sram : std_logic_vector(19 downto 0);
 
     signal serial_r : std_logic;
     signal serial_w : std_logic;
+    signal flash_r : std_logic;
+    signal flash_w : std_logic;
     signal intr : std_logic;
+    signal flash_ce :   STD_LOGIC;
+    signal flash_byte_mode :   STD_LOGIC;
+    signal flash_oe :   STD_LOGIC;
+    signal flash_we :   STD_LOGIC;
+    signal flash_addr : STD_LOGIC_VECTOR (22 downto 0);
+    signal flash_data : STD_LOGIC_VECTOR (15 downto 0);
+    signal flash_vpen : STD_LOGIC;
+    signal flash_rp :   STD_LOGIC;
+    signal addr_flash : std_logic_vector(31 downto 0);
+    signal r_flash : std_logic;
+    signal w_flash : std_logic;
+    signal intr_flash : std_logic;
+    signal data_flash : std_logic_vector(31 downto 0);
+    signal flash_mem_addr : std_logic_vector(31 downto 0);
 
-
-   -- Clock period definitions
-   constant clk_period : time := 10 ns;
+    -- Clock period definitions
+    constant clk_period : time := 4 ns;
  
 BEGIN
+    r_final <= r_core when is_dma_mem = '0' else r_flash;
+    w_final <= w_core when is_dma_mem = '0' else w_flash;
+    addr_final <= addr_core when is_dma_mem = '0' else flash_mem_addr;
+    data_final <= data_core when is_dma_mem = '0' else data_flash;
+
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
@@ -141,7 +142,6 @@ BEGIN
         cpu_clk => cpu_clk,
         reset => reset,
         is_dma_mem => is_dma_mem,
-        --is_cancel => is_cancel,
         is_next_mem => is_next_mem,
         r_core => r_core,
         w_core => w_core,
@@ -151,10 +151,10 @@ BEGIN
     );
 
     memDecode: MemDecoder PORT MAP (
-        addr => addr_core,
-        r => r_core,
-        w => w_core,
-        data_in => data_core,
+        addr => addr_final,
+        r => r_final,
+        w => w_final,
+        data_in => data_final,
         data_out => data_mem,
         sram_data => data_sram,
         sram_addr => addr_sram,
@@ -166,7 +166,11 @@ BEGIN
         serial_r => serial_r,
         serial_w => serial_w,
         serial_addr => serial_addr,
-
+        flash_data_out => flash_data_out,
+        flash_data_in => flash_data_in,
+        flash_r => flash_r,
+        flash_w => flash_w,
+        flash_addr => flash_ctrl_addr,
         clk => clk,
         cpu_clk => cpu_clk,
         reset => reset
@@ -190,9 +194,33 @@ BEGIN
         clk => clk,
         reset => reset
     );
-
-    is_dma_mem <= '0';
-    is_cancel <= '0';
+    
+    flash : FlashCtrl PORT MAP(
+        ctrl_addr => flash_ctrl_addr,
+        data_in => flash_data_out,
+        data_out => flash_data_in,
+        intr => intr_flash,
+        r => flash_r,
+        w => flash_w,
+        next_pend => is_next_mem,
+        need_mem => is_dma_mem,
+        flash_ce => flash_ce,
+        flash_byte_mode => flash_byte_mode,
+        flash_oe => flash_oe,
+        flash_we => flash_we,
+        flash_addr => flash_addr,
+        flash_data => flash_data,
+        flash_vpen => flash_vpen,
+        flash_rp => flash_rp,
+        mem_addr => flash_mem_addr,
+        mem_data_out => data_flash,
+        mem_data_in => data_mem,
+        mem_r => r_flash,
+        mem_w => w_flash,
+        clk => clk,
+        cpu_clk => cpu_clk,
+        reset => reset
+    );
 
 
    -- Clock process definitions

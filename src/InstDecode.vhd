@@ -75,7 +75,7 @@ begin
         end if;
     end process;
 
-    process(inst, npc, is_sb_slot)
+    process(inst, npc, is_sb_slot, l_is_mem_read)
         variable op_code : integer range 0 to 63;
         variable funct : integer range 0 to 63;
         variable rt_id_inst : integer range 0 to 127;
@@ -359,7 +359,6 @@ begin
                             rd_id_new := rt_id_inst;
                             rt_id_new := rd_id_inst + 32;
                             rs_id_new := 0;
-									 report("mfc0");
                         when 4 => --mtc0
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
@@ -367,7 +366,6 @@ begin
                             rd_id_new := rd_id_inst + 32;
                             rt_id_new := rt_id_inst;
                             rs_id_new := 0;
-									 report("mtc0");
                         when 16 =>
 							case funct is
 							when 2 => --tlbwi

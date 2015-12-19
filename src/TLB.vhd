@@ -72,7 +72,7 @@ begin
         intr := '1';
         if (vaddr and X"80000000") /= X"00000000" or vaddr = x"bfd003f8" or vaddr = x"bfd003fc" then
             paddr <= vaddr;
-            tlb_intr <= '0';
+            intr := '0';
         else
             for i in tlbEntries'range loop
                 if vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '0' then
@@ -87,8 +87,8 @@ begin
                     exit;
                 end if;
             end loop;
-            tlb_intr <= intr;
         end if;
+        tlb_intr <= intr;
     end process;
 
 end Behavioral;

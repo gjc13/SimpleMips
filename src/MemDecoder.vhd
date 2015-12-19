@@ -50,6 +50,12 @@ port(
 	serial_r:out std_logic;
 	serial_w:out std_logic;
 	serial_addr:out std_logic_vector(31 downto 0);
+
+    flash_data_out : out std_logic_vector(31 downto 0);
+    flash_data_in : in std_logic_vector(31 downto 0);
+    flash_r : out std_logic;
+    flash_w : out std_logic;
+    flash_addr : out std_logic_vector(31 downto 0);
 	
 	cpu_clk: in std_logic;
 	clk: in std_logic;
@@ -58,11 +64,14 @@ port(
 end MemDecoder;
 
 architecture Behavioral of MemDecoder is
-	type VisitEnum is (SRAM, SERIAL);
+	type VisitEnum is (SRAM, SERIAL, FLASH);
 	type State is (IDLE, READ1, READ2, READ3, WRITE1, WRITE2, WRITE3, NOP1, NOP2, NOP3);
 	
 	constant KSEG0_LO : unsigned := X"80000000";
 	constant KSEG0_HI : unsigned := X"A0000000";
+    constant FLASH_ADDR_START : unsigned := X"bfd00400";
+    constant SERIAL_ADDR_START : unsigned := X"bfd003f8";
+    constant FLASH_ADDR_END : unsigned := X"bfd00410";
 
 	signal visit_type : VisitEnum;
 	signal reset_latch : std_logic;
@@ -89,6 +98,8 @@ begin
 				when READ2 => 
 					if(visit_type = SERIAL) then
 						data_out <= serial_data_in;
+                    elsif (visit_type = FLASH) then
+                        data_out <= flash_data_in;
 					end if;
 				when others => 
                     null;
@@ -109,10 +120,18 @@ begin
 	-- the address bus logic
 	process(addr)
         variable physical_addr : std_logic_vector(31 downto 0);
+        variable flash_addr_new : std_logic_vector(31 downto 0);
+        variable serial_addr_new : std_logic_vector(31 downto 0);
 	begin
-		if (addr = X"bfd003f8" or addr = X"bfd003fc") then
-			visit_type <= SERIAL;
-			physical_addr := addr;
+        physical_addr := (others => '0');
+        flash_addr_new := (others => '1');
+        serial_addr_new := (others => '1');
+        if (unsigned(addr) >= FLASH_ADDR_START and unsigned(addr) <= FLASH_ADDR_END) then
+            visit_type <= FLASH;
+            flash_addr_new := std_logic_vector(unsigned(addr) - FLASH_ADDR_START);
+        elsif addr = X"bfd003f8" or addr = X"bfd003fc" then
+            visit_type <= SERIAL;
+            serial_addr_new := std_logic_vector(unsigned(addr) - SERIAL_ADDR_START);
 		elsif (unsigned(addr) >= KSEG0_LO and unsigned(addr) < KSEG0_HI) then
 			-- kseg0 we strip off the first bit
 			visit_type <= SRAM;
@@ -121,13 +140,8 @@ begin
 			visit_type <= SRAM;
 			physical_addr := addr;
 		end if;
-        if addr = X"bfd003f8" then
-            serial_addr <= X"00000000";
-        elsif addr = X"bfd003fc" then
-            serial_addr <= X"00000004";
-        else 
-            serial_addr <= X"00000000";
-        end if;
+        serial_addr <= serial_addr_new;
+        flash_addr <= flash_addr_new;
         sram_addr <= physical_addr(21 downto 2);
 	end process;
 
@@ -218,14 +232,35 @@ begin
                 we <= not w_bus;
                 serial_r <= '0';
                 serial_w <= '0';
+                flash_r <= '0';
+                flash_w <= '0';
             when SERIAL =>
                 oe <= '1';
                 we <= '1';
                 sram_data <= (others => 'Z');
                 serial_r <= r_bus;
                 serial_w <= w_bus;
+                flash_r <= '0';
+                flash_w <= '0';
+            when FLASH =>
+                oe <= '1';
+                we <= '1';
+                sram_data <= (others => 'Z');
+                serial_r <= '0';
+                serial_w <= '0';
+                flash_r <= r_bus;
+                flash_w <= w_bus;
+            when others =>
+                oe <= '1';
+                we <= '1';
+                sram_data <= (others => 'Z');
+                serial_r <= '0';
+                serial_w <= '0';
+                flash_r <= '0';
+                flash_w <= '0';
         end case;
         serial_data_out <= data_in;
+        flash_data_out <= data_in;
     end process;
 
 end Behavioral;
