@@ -188,7 +188,6 @@ begin
     is_bubble_if <= is_bubble or inst_bubble_id or is_dma_mem;
 
     is_intr <= syscall_intr or clk_intr or com1_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
-    syscall_intr <= '0';
     com1_intr <= '0';
     dma_intr <= '0';
     ps2_intr <= '0';
@@ -247,6 +246,7 @@ begin
         immediate => immediate_id,
         is_eret => is_eret,
         is_tlb_write => is_tlb_write_id,
+        is_syscall => syscall_intr,
         clk => inner_cpu_clk,
         reset => reset
     );

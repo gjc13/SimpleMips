@@ -59,7 +59,7 @@ entity ExceptionDecoder is
             handler_addr : out  STD_LOGIC_VECTOR (31 downto 0);
             is_cancel : out  STD_LOGIC;
             force_cp0_write : out STD_LOGIC;
-				need_intr_out : out STD_LOGIC;
+            need_intr_out : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end ExceptionDecoder;

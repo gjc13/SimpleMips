@@ -106,19 +106,20 @@ BEGIN
 		wait for 10 ns;	
 		assert result = X"FFFF00FF" report "or error" severity error;
 
-		report "test shl";
-		alu_opcode <= ALU_SHL;
-		shift_amount <= 31;
+		report "test xor";
+		alu_opcode <= ALU_XOR;
 		wait for 10 ns;	
-		assert result = X"80000000" report "shl error" severity error;
+		assert result = X"00FF00FF" report "xor error" severity error;
 
-		report "test shr";
-		alu_opcode <= ALU_SHR;
-		shift_amount <= 30;
+		report "test srav";
+		alu_opcode <= ALU_SRAV;
+		lhs <= X"0000000F";
+		rhs <= X"FFFF0000";
 		wait for 10 ns;	
-		assert result = X"00000003" report "shr error" severity error;
-
+		assert result = X"FFFFFFFE" report "srav error" severity error;
+      
 		report "test ls";
+		lhs <= X"FF0000FF";
 		rhs <= X"00000000";
 		alu_opcode <= ALU_LS;
 		wait for 10 ns;	

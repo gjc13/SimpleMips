@@ -54,12 +54,12 @@ begin
 				result <= lhs or rhs;
 			when ALU_NOT =>
 				result <= not lhs;
-			when ALU_SHL => 
-				result <= std_logic_vector(shift_left(unsigned(lhs), shift_amount));
+			when ALU_XOR => 
+				result <= lhs xor rhs;
 			when ALU_SLL =>
 				result <= std_logic_vector(shift_left(unsigned(rhs), shift_amount));
-			when ALU_SHR =>
-				result <= std_logic_vector(shift_right(unsigned(lhs), shift_amount));
+			when ALU_SRAV =>
+				result <= std_logic_vector(shift_right(signed(rhs), to_integer(unsigned(lhs(4 downto 0)))));
 			when ALU_SRA =>
 				result <= std_logic_vector(shift_right(signed(rhs), shift_amount));
 			when ALU_SRL =>
