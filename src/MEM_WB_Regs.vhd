@@ -36,6 +36,8 @@ entity MEM_WB_Regs is
 			is_reg_write_wb : out  STD_LOGIC;
 			rd_id_mem : in  integer range 0 to 127;
 			rd_id_wb : out  integer range 0 to 127;
+            is_tlb_write_mem : in STD_LOGIC;
+            is_tlb_write_wb : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end MEM_WB_Regs;
@@ -50,6 +52,7 @@ begin
 		elsif(clk'event and clk = '1') then
 			result_wb <= result_mem;
 			is_reg_write_wb <= is_reg_write_mem;
+            is_tlb_write_wb <= is_tlb_write_mem;
 			rd_id_wb <= rd_id_mem;
 		end if;
 	end process;

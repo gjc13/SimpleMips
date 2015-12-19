@@ -34,6 +34,7 @@ use work.Definitions.ALL;
 entity InstDecode is
     Port (  inst : in  STD_LOGIC_VECTOR (31 downto 0);
             npc : in STD_LOGIC_VECTOR (31 downto 0);
+            is_tlb_write : out  STD_LOGIC;
             is_jump : out  STD_LOGIC;
             jump_pc : out  STD_LOGIC_VECTOR (31 downto 0);
             is_jr   : out  STD_LOGIC;
@@ -45,7 +46,7 @@ entity InstDecode is
             is_reg_inst : out  STD_LOGIC;
             is_mem_read : out  STD_LOGIC;
             is_mem_write : out  STD_LOGIC;
-				l_is_mem_read : in STD_LOGIC;
+            l_is_mem_read : in STD_LOGIC;
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
@@ -106,6 +107,7 @@ begin
         variable is_sb_new : std_logic;
         variable need_bubble_new : std_logic;
         variable is_eret_new : std_logic;
+        variable is_tlb_write_new : std_logic;
 
     begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
@@ -138,6 +140,7 @@ begin
         is_sb_new := '0';
         need_bubble_new := '0';
         is_eret_new := '0';
+        is_tlb_write_new := '0';
         
         if is_sb_slot = '1' then
             is_mem_write_new := '1';
@@ -347,7 +350,7 @@ begin
                     rd_id_new := rt_id_inst;
                     immediate_new := inst(15 downto 0) & X"0000";
 
-                when 16 => --mtc0, mfc0
+                when 16 => --mtc0, mfc0, tlbwi
                     case rs_id_inst is
                         when 0 => --mfc0
                             is_reg_inst_new := '1';
@@ -365,8 +368,13 @@ begin
                             rt_id_new := rt_id_inst;
                             rs_id_new := 0;
 									 report("mtc0");
-                        when 16 => --eret
-                            is_eret_new := '1';
+                        when 16 =>
+							case funct is
+							when 2 => --tlbwi
+								is_tlb_write_new := '1';
+							when 16 => --eret
+								is_eret_new := '1';
+							end case;
                         when others => NULL;
                     end case;
 
@@ -438,6 +446,7 @@ begin
         next_is_sb_slot <= is_sb_new;
         need_bubble <= need_bubble_new;
         is_eret <= is_eret_new;
+        is_tlb_write <= is_tlb_write_new;
     end process;
 
 end Behavioral;
