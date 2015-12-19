@@ -160,9 +160,6 @@ architecture Behavioral of CPUCore is
     constant LINK_OFFSET : unsigned := X"00000004";
 begin
     cpu_clk <= inner_cpu_clk;
-    --rs_id_id <= to_integer(unsigned(inst_use(25 downto 21)));
-    --rs_id_id <= to_integer(unsigned(inst_id(25 downto 21)));
-    --rt_id_id <= to_integer(unsigned(inst_id(20 downto 16)));
     is_next_mem <= is_mem_write_ex or is_mem_read_ex;
     result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
     is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
@@ -172,7 +169,7 @@ begin
     result_mem_final <= data_in_masked when is_mem_read_mem = '1' else result_mem;
     inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
 
-    is_bubble_if <= is_bubble or inst_bubble_id;
+    is_bubble_if <= is_bubble or inst_bubble_id or is_dma_mem;
 
     is_intr <= syscall_intr or clk_intr or com1_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
     syscall_intr <= '0';
@@ -223,7 +220,7 @@ begin
         is_reg_inst => is_reg_inst_id,
         is_mem_read => is_mem_read_id,
         is_mem_write => is_mem_write_id,
-		  l_is_mem_read=>is_mem_read_ex,
+		l_is_mem_read=>is_mem_read_ex,
         mem_opcode => mem_op_code_id,
         shift_amount => shift_amount_id,
         is_reg_write => is_reg_write_id,
