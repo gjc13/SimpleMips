@@ -69,12 +69,14 @@ ARCHITECTURE behavior OF top_cpu IS
          cpu_clk : OUT  std_logic;
          reset : IN  std_logic;
          is_dma_mem : IN  std_logic;
+         --is_cancel : IN  std_logic;
          is_next_mem : OUT  std_logic;
          r_core : OUT  std_logic;
          w_core : OUT  std_logic;
          addr_core : OUT  std_logic_vector(31 downto 0);
          data_core : OUT  std_logic_vector(31 downto 0);
-         data_mem : IN  std_logic_vector(31 downto 0)
+         data_mem : IN  std_logic_vector(31 downto 0);
+         com_intr : IN std_logic
         );
     END COMPONENT;
     
@@ -150,7 +152,8 @@ BEGIN
         w_core => w_core,
         addr_core => addr_core,
         data_core => data_core,
-        data_mem => data_mem
+        data_mem => data_mem,
+        com_intr => serial_intr
     );
 
     memDecode: MemDecoder PORT MAP (

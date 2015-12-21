@@ -91,19 +91,19 @@ architecture Behavioral of ExceptionDecoder is
 
 begin 
     --need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
-    force_cp0_write <= need_intr or is_eret; 
-    badvaddr_new <= mem_addr;
+     force_cp0_write <= need_intr or is_eret; 
+     badvaddr_new <= mem_addr;
 	 need_intr_out <= need_intr;
 	 
 	 process(intr_state, is_intr, status_old)
 	 begin
 	     case intr_state is
-		      when IDLE =>
+		        when IDLE =>
 				    need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
 				when OTHER_INTR =>
-				    need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+				    need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
 				when TLB =>
-				    need_intr <= '0';
+				    need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
 		  end case;
 	 end process;
 	

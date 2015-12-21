@@ -50,7 +50,8 @@ ARCHITECTURE behavior OF test_cpu IS
          w_core : OUT  std_logic;
          addr_core : OUT  std_logic_vector(31 downto 0);
          data_core : OUT  std_logic_vector(31 downto 0);
-         data_mem : IN  std_logic_vector(31 downto 0)
+         data_mem : IN  std_logic_vector(31 downto 0);
+         com_intr : IN std_logic
         );
     END COMPONENT;
 
@@ -110,7 +111,7 @@ ARCHITECTURE behavior OF test_cpu IS
     signal serial_w : std_logic;
     signal flash_r : std_logic;
     signal flash_w : std_logic;
-    signal intr : std_logic;
+    signal intr_serial : std_logic;
     signal flash_ce :   STD_LOGIC;
     signal flash_byte_mode :   STD_LOGIC;
     signal flash_oe :   STD_LOGIC;
@@ -147,7 +148,8 @@ BEGIN
         w_core => w_core,
         addr_core => addr_core,
         data_core => data_core,
-        data_mem => data_mem
+        data_mem => data_mem,
+        com_intr => intr_serial
     );
 
     memDecode: MemDecoder PORT MAP (
@@ -188,7 +190,7 @@ BEGIN
         addr => serial_addr,
         data_in => serial_data_out,
         data_out => serial_data_in,
-        intr => intr, 
+        intr => intr_serial, 
         w => serial_w,
         r => serial_r,
         clk => clk,

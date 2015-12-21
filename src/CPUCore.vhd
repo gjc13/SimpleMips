@@ -40,7 +40,8 @@ entity CPUCore is
             w_core : out  STD_LOGIC;
             addr_core : out  STD_LOGIC_VECTOR (31 downto 0);
             data_core : out STD_LOGIC_VECTOR (31 downto 0);
-            data_mem : in  STD_LOGIC_VECTOR (31 downto 0));
+            data_mem : in  STD_LOGIC_VECTOR (31 downto 0);
+            com_intr : in STD_LOGIC);
 end CPUCore;
 
 architecture Behavioral of CPUCore is
@@ -146,7 +147,6 @@ architecture Behavioral of CPUCore is
     signal is_intr : std_logic;
     signal syscall_intr : std_logic;
     signal clk_intr : std_logic;
-    signal com1_intr : std_logic;
     signal dma_intr : std_logic;
     signal ps2_intr : std_logic;
     signal ri_intr : std_logic;
@@ -187,8 +187,7 @@ begin
 
     is_bubble_if <= is_bubble or inst_bubble_id or is_dma_mem;
 
-    is_intr <= syscall_intr or clk_intr or com1_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
-    com1_intr <= '0';
+    is_intr <= syscall_intr or clk_intr or com_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
     dma_intr <= '0';
     ps2_intr <= '0';
     ri_intr <= '0';
@@ -448,7 +447,7 @@ begin
         is_intr => is_intr,
         syscall_intr => syscall_intr,
         clk_intr => clk_intr,
-        com1_intr => com1_intr,
+        com1_intr => com_intr,
         dma_intr => dma_intr,
         ps2_intr => ps2_intr,
         ri_intr => ri_intr,
