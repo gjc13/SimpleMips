@@ -45,7 +45,8 @@ ARCHITECTURE behavior OF test_alu IS
          lhs : IN  std_logic_vector(31 downto 0);
          rhs : IN  std_logic_vector(31 downto 0);
          shift_amount : IN  integer range 0 to 31;
-         alu_opcode : IN  integer range 0 to 15;
+         alu_opcode : IN  integer range 0 to 17;
+			hi_lo : OUT  std_logic_vector(63 downto 0);
          result : OUT  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
@@ -55,9 +56,10 @@ ARCHITECTURE behavior OF test_alu IS
    signal lhs : std_logic_vector(31 downto 0) := (others => '0');
    signal rhs : std_logic_vector(31 downto 0) := (others => '0');
    signal shift_amount : integer range 0 to 31;
-   signal alu_opcode : integer range 0 to 15;
-
- 	--Outputs
+   signal alu_opcode : integer range 0 to 17;
+	
+	--Outputs
+ 	signal hi_lo : std_logic_vector(63 downto 0);
    signal result : std_logic_vector(31 downto 0);
    -- No clocks detected in port list. Replace <clock> below with 
    -- appropriate port name 
@@ -70,6 +72,7 @@ BEGIN
           rhs => rhs,
           shift_amount => shift_amount,
           alu_opcode => alu_opcode,
+			 hi_lo => hi_lo,
           result => result
         );
 		  
@@ -158,6 +161,20 @@ BEGIN
 		lhs <= X"00000004";
 		wait for 10 ns;	
 		assert result = X"0FFFF000" report "srlv error" severity error;
+		
+		report "test mult";
+		alu_opcode <= ALU_MULT;
+		lhs <= X"05397FB1";
+		rhs <= X"00BC614E";
+		wait for 10 ns;
+		assert result = X"00000000" report "report error" severity error;
+		assert hi_lo = X"0003D83626E2F8EE" report "hi_lo error" severity error;
+		
+		report "test mult";
+		alu_opcode <= ALU_DIVU;
+		wait for 10 ns;
+		assert result = X"00000000" report "report error" severity error;
+		assert hi_lo = X"0012D68F00000007" report "hi_lo error" severity error;
 
 		wait;
    end process;

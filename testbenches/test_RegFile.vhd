@@ -39,6 +39,7 @@ ARCHITECTURE behavior OF test_RegFile IS
     signal rs_id : integer range 0 to 127;
     signal rt_id : integer range 0 to 127;
     signal rd_id : integer range 0 to 127;
+	 signal hi_lo : std_logic_vector(63 downto 0);
     signal is_regwrite : std_logic := '0';
     signal rd_data : std_logic_vector(31 downto 0) := (others => '0');
     signal clk : std_logic := '0';
@@ -47,6 +48,7 @@ ARCHITECTURE behavior OF test_RegFile IS
     signal cause_new : std_logic_vector(31 downto 0);
     signal badvaddr_new : std_logic_vector(31 downto 0);
     signal entry_hi_new : std_logic_vector(31 downto 0);
+	 signal epc_new : std_logic_vector(31 downto 0);
     signal force_cp0_write : std_logic := '0';
 
     --Outputs
@@ -80,6 +82,7 @@ BEGIN
           rs_id => rs_id,
           rt_id => rt_id,
           rd_id => rd_id,
+			 hi_lo => hi_lo,
           is_regwrite => is_regwrite,
           rd_data => rd_data,
           rs_data => rs_data,
@@ -89,6 +92,7 @@ BEGIN
           badvaddr_new => badvaddr_new,
           entry_hi_new => entry_hi_new,
           force_cp0_write => force_cp0_write,
+			 epc_new => epc_new,
           status => status,
           cause => cause,
           count => count,
@@ -186,6 +190,13 @@ BEGIN
 		  wait for clk_period;
         assert status = X"01234567" report "status error";
         assert cause = X"76543210" report "status error";
-        wait;
+        
+		  
+		  report("write to HI LO");
+		  rd_id <= 64;
+		  hi_lo <= X"0000111100002222";
+		  is_regwrite <= '1';
+		  wait for clk_period;
+		  wait;
    end process;
 END;

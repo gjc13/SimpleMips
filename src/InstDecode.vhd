@@ -50,7 +50,7 @@ entity InstDecode is
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
-            alu_opcode : out  INTEGER RANGE 0 to 15;
+            alu_opcode : out  INTEGER RANGE 0 to 17;
             rd_id : out  INTEGER RANGE 0 to 127;
             rt_id : out  INTEGER RANGE 0 to 127; 
             rs_id : out  INTEGER RANGE 0 to 127; 
@@ -58,11 +58,12 @@ entity InstDecode is
             need_bubble : out STD_LOGIC;
             is_eret : out STD_LOGIC;
             is_syscall : out STD_LOGIC;
+				is_hi_lo : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end InstDecode;
 
-architecture Behavioral of InstDecode is
+architecture Behavioral of InstDecode is 
     signal is_sb_slot : std_logic := '0';
     signal next_is_sb_slot : std_logic := '0';
 begin
@@ -100,7 +101,7 @@ begin
         variable mem_opcode_new : integer RANGE 0 to 7;
         variable shift_amount_new : integer RANGE 0 to 31;
         variable is_reg_write_new : std_logic;
-        variable alu_opcode_new : integer RANGE 0 to 15;
+        variable alu_opcode_new : integer RANGE 0 to 17;
         variable rd_id_new : integer RANGE 0 to 127;
         variable rt_id_new : integer RANGE 0 to 127;
         variable rs_id_new : integer RANGE 0 to 127;
@@ -110,6 +111,7 @@ begin
         variable is_eret_new : std_logic;
         variable is_tlb_write_new : std_logic;
         variable is_syscall_new : std_logic;
+		  variable is_hi_lo_new : std_logic;
 
     begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
@@ -144,6 +146,7 @@ begin
         is_eret_new := '0';
         is_tlb_write_new := '0';
         is_syscall_new := '0';
+		  is_hi_lo_new := '0';
         
         if is_sb_slot = '1' then
             is_mem_write_new := '1';
@@ -234,6 +237,18 @@ begin
                             rd_id_new := REG_LO;
                             rt_id_new := 0;
                             rs_id_new := rs_id_inst;
+                        when 24 => --mult
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+									 is_hi_lo_new := '1';
+                            alu_opcode_new := ALU_MULT;
+                            rd_id_new := REG_HI;
+                        when 27 => --divu
+                            is_reg_inst_new := '1';
+                            is_reg_write_new := '1';
+									 is_hi_lo_new := '1';
+                            alu_opcode_new := ALU_DIVU;
+                            rd_id_new := REG_HI;
                         when 33 => --addu
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
@@ -323,11 +338,18 @@ begin
                     branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
                     branch_opcode_new := B_LE;
                     is_reg_inst_new := '1';
+
                 when 7 => --bgtz
                     is_branch_new := '1';
                     branch_offset_new := std_logic_vector(resize(signed(inst(15 downto 0) & "00"), branch_offset'length));
                     branch_opcode_new := B_G;
                     is_reg_inst_new := '1';
+
+                when 8 => --addi
+                    alu_opcode_new := ALU_ADD;
+                    is_reg_write_new := '1';
+                    rd_id_new := rt_id_inst;
+                    immediate_new := std_logic_vector(resize(signed(inst(15 downto 0)), immediate'length));
 
                 when 9 => --addiu
                     alu_opcode_new := ALU_ADD;
@@ -471,6 +493,7 @@ begin
         is_eret <= is_eret_new;
         is_tlb_write <= is_tlb_write_new;
         is_syscall <= is_syscall_new;
+		  is_hi_lo <= is_hi_lo_new;
     end process;
 
 end Behavioral;

@@ -46,6 +46,10 @@ entity EX_MEM_Regs is
 			rd_id_mem : out integer range 0 to 127; 
             is_tlb_write_ex : in STD_LOGIC;
             is_tlb_write_mem : out STD_LOGIC;
+            hi_lo_ex : in  STD_LOGIC_VECTOR (63 downto 0);
+            hi_lo_mem : out  STD_LOGIC_VECTOR (63 downto 0);
+            is_hi_lo_ex : in STD_LOGIC;
+            is_hi_lo_mem : out STD_LOGIC;
 			clk : in  STD_LOGIC;
 			reset : in STD_LOGIC);
 end EX_MEM_Regs;
@@ -68,6 +72,8 @@ begin
 			is_reg_write_mem <= is_reg_write_ex;
 			rd_id_mem <= rd_id_ex;
             is_tlb_write_mem <= is_tlb_write_ex;
+            hi_lo_mem <= hi_lo_ex;
+            is_hi_lo_mem <= is_hi_lo_ex;
 		end if;
 	end process;
 end Behavioral;

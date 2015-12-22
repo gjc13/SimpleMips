@@ -19,6 +19,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use work.Definitions.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -33,6 +34,8 @@ entity RegFile is
     Port (  rs_id : in  INTEGER RANGE 0 TO 127;
             rt_id : in  INTEGER RANGE 0 TO 127;
             rd_id : in  INTEGER RANGE 0 TO 127;
+            hi_lo : in  STD_LOGIC_VECTOR (63 downto 0);
+			is_hi_lo : in  STD_LOGIC;
             is_regwrite : in  STD_LOGIC;
             rd_data : in  STD_LOGIC_VECTOR (31 downto 0);
             rs_data : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -49,10 +52,10 @@ entity RegFile is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
-				index : out STD_LOGIC_VECTOR(31 downto 0);
-				entryHi : out STD_LOGIC_VECTOR(31 downto 0);
-				entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
-				entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
+			index : out STD_LOGIC_VECTOR(31 downto 0);
+			entryHi : out STD_LOGIC_VECTOR(31 downto 0);
+			entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
+			entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
 			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
@@ -106,12 +109,23 @@ begin
                     regs(BADVADDR_I) <= badvaddr_new;
                     regs(ENTRYHI_I) <= entry_hi_new;
                     regs(EPC_I) <= epc_new;
-                    if (is_regwrite = '1' and rd_id /= 0 and rd_id < 32) then
-                        regs(rd_id) <= rd_data;
+                    if (is_regwrite = '1' and rd_id /= 0 and (rd_id < 32 or rd_id = REG_HI or rd_id = REG_LO)) then
+                        if (is_hi_lo = '1') then
+                            regs(REG_HI) <= hi_lo(63 downto 32);
+                            regs(REG_LO) <= hi_lo(31 downto 0);
+                        else
+                            regs(rd_id) <= rd_data;
+                        end if;
+                        
                     end if;
                 else
                     if (is_regwrite = '1' and rd_id /= 0 and rd_id /= COUNT_I) then
-                        regs(rd_id) <= rd_data;
+                        if (is_hi_lo = '1') then
+                            regs(REG_HI) <= hi_lo(63 downto 32);
+                            regs(REG_LO) <= hi_lo(31 downto 0);
+                        else
+                            regs(rd_id) <= rd_data;
+                        end if;
                     end if;
                 end if;
             end if;

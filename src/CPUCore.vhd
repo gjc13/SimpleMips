@@ -79,7 +79,7 @@ architecture Behavioral of CPUCore is
     signal mem_op_code_id : integer range 0 to 7;
     signal shift_amount_id : integer range 0 to 31;
     signal is_reg_write_id : std_logic;
-    signal alu_op_code_id : integer range 0 to 15;
+    signal alu_op_code_id : integer range 0 to 17;
     signal rd_id_id : integer range 0 to 127;
     signal immediate_id : std_logic_vector(31 downto 0);
     signal inst_bubble_id : std_logic;
@@ -92,7 +92,7 @@ architecture Behavioral of CPUCore is
     signal immediate_ex : std_logic_vector(31 downto 0);
     signal is_reg_inst_ex : std_logic;
     signal shift_amount_ex : integer range 0 to 31;
-    signal alu_op_code_ex : integer range 0 to 15;
+    signal alu_op_code_ex : integer range 0 to 17;
     signal is_link_ex : std_logic;
     signal mem_op_code_ex : integer range 0 to 7;
     signal is_mem_read_ex : std_logic;
@@ -172,6 +172,15 @@ architecture Behavioral of CPUCore is
 	 signal result_ex_tlb:std_logic_vector(31 downto 0);
 	 signal is_mem_ex:std_logic;
     constant LINK_OFFSET : unsigned := X"00000004";
+
+    signal hi_lo_ex : std_logic_vector(63 downto 0);
+    signal hi_lo_mem : std_logic_vector(63 downto 0);
+    signal hi_lo_wb : std_logic_vector(63 downto 0);
+	signal is_hi_lo_id : std_logic;
+    signal is_hi_lo_ex : std_logic;
+    signal is_hi_lo_mem : std_logic;
+    signal is_hi_lo_wb : std_logic;
+
 begin
     cpu_clk <= inner_cpu_clk;
     is_mem_ex<= is_mem_read_ex or is_mem_write_ex;
@@ -247,6 +256,7 @@ begin
         is_eret => is_eret,
         is_tlb_write => is_tlb_write_id,
         is_syscall => syscall_intr,
+		is_hi_lo => is_hi_lo_id,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -315,6 +325,8 @@ begin
         inst_bubble_ex => inst_bubble_ex,
         is_tlb_write_id => is_tlb_write_id,
         is_tlb_write_ex => is_tlb_write_ex,
+		is_hi_lo_id => is_hi_lo_id,
+		is_hi_lo_ex => is_hi_lo_ex,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -341,6 +353,8 @@ begin
         rs_id => rs_id_id,
         rt_id => rt_id_id,
         rd_id => rd_id_wb,
+        hi_lo => hi_lo_wb,
+		is_hi_lo => is_hi_lo_wb,
         is_regwrite => is_reg_write_wb,
         rd_data => result_wb,
         rs_data => rs_data_id,
@@ -353,10 +367,10 @@ begin
         force_cp0_write => force_cp0_write,
         status => status_old,
         cause => cause_old,
-		  index => index_old,
-		  entryHi => entryHi_old,
-		  entryLo0 => entryLo0_old,
-		  entryLo1 => entryLo1_old,
+		index => index_old,
+		entryHi => entryHi_old,
+		entryLo0 => entryLo0_old,
+		entryLo1 => entryLo1_old,
         --count => count_old,
         --compare => compare_old,
         ebase => ebase,
@@ -371,6 +385,7 @@ begin
         rhs => alu_rhs,
         shift_amount => shift_amount_ex,
         alu_opcode => alu_op_code_ex,
+        hi_lo => hi_lo_ex,
         result => alu_result
     );
 
@@ -391,6 +406,10 @@ begin
         rd_id_mem => rd_id_mem,
         is_tlb_write_ex => is_tlb_write_ex,
         is_tlb_write_mem => is_tlb_write_mem,
+        hi_lo_ex => hi_lo_ex,
+        hi_lo_mem => hi_lo_mem,
+		is_hi_lo_ex => is_hi_lo_ex,
+		is_hi_lo_mem => is_hi_lo_mem,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -428,6 +447,10 @@ begin
         rd_id_wb => rd_id_wb,
         is_tlb_write_mem => is_tlb_write_mem,
         is_tlb_write_wb => is_tlb_write_wb,
+        hi_lo_mem => hi_lo_mem,
+        hi_lo_wb => hi_lo_wb,
+		is_hi_lo_mem => is_hi_lo_mem,
+		is_hi_lo_wb => is_hi_lo_wb,
         clk => inner_cpu_clk,
         reset => reset
     );

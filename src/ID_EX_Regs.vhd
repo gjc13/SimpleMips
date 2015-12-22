@@ -44,8 +44,8 @@ entity ID_EX_Regs is
 			is_reg_inst_ex : out  STD_LOGIC;
 			shift_amount_id : in  integer range 0 to 31;
 			shift_amount_ex : out integer range 0 to 31;
-			alu_op_code_id : in integer range 0 to 15;
-			alu_op_code_ex : out integer range 0 to 15;
+			alu_op_code_id : in integer range 0 to 17;
+			alu_op_code_ex : out integer range 0 to 17;
 			is_link_id : in  STD_LOGIC;
 			is_link_ex : out  STD_LOGIC;
 			mem_op_code_id : in  integer range 0 to 7;
@@ -66,6 +66,8 @@ entity ID_EX_Regs is
             inst_bubble_ex : out STD_LOGIC;
             is_tlb_write_id : in STD_LOGIC;
             is_tlb_write_ex : out STD_LOGIC;
+            is_hi_lo_id : in STD_LOGIC;
+            is_hi_lo_ex : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset: in STD_LOGIC);
 end ID_EX_Regs;
@@ -100,6 +102,7 @@ begin
 			rd_id_ex <= rd_id_id;
             inst_bubble_ex <= inst_bubble_id;
             is_tlb_write_ex <= is_tlb_write_id;
+            is_hi_lo_ex <= is_hi_lo_id;
 		end if;
 	end process;
 end Behavioral;

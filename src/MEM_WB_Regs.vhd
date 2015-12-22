@@ -38,6 +38,10 @@ entity MEM_WB_Regs is
 			rd_id_wb : out  integer range 0 to 127;
             is_tlb_write_mem : in STD_LOGIC;
             is_tlb_write_wb : out STD_LOGIC;
+            hi_lo_mem : in  STD_LOGIC_VECTOR (63 downto 0);
+            hi_lo_wb : out  STD_LOGIC_VECTOR (63 downto 0);
+            is_hi_lo_mem : in STD_LOGIC;
+            is_hi_lo_wb : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end MEM_WB_Regs;
@@ -54,6 +58,8 @@ begin
 			is_reg_write_wb <= is_reg_write_mem;
             is_tlb_write_wb <= is_tlb_write_mem;
 			rd_id_wb <= rd_id_mem;
+			hi_lo_wb <= hi_lo_mem;
+			is_hi_lo_wb <= is_hi_lo_mem;
 		end if;
 	end process;
 

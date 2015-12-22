@@ -18,6 +18,8 @@ package Definitions is
 	constant ALU_LU : INTEGER := 13; --less unsigned
 	constant ALU_SLLV : INTEGER := 14;
 	constant ALU_SRLV : INTEGER := 15;
+    constant ALU_MULT : INTEGER := 16;
+    constant ALU_DIVU : INTEGER := 17;
 
 	-- all branch compare is signed compare
 	constant B_ALL: INTEGER := 0;
