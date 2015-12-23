@@ -240,13 +240,13 @@ begin
                         when 24 => --mult
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
-									 is_hi_lo_new := '1';
+                            is_hi_lo_new := '1';
                             alu_opcode_new := ALU_MULT;
                             rd_id_new := REG_HI;
                         when 27 => --divu
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
-									 is_hi_lo_new := '1';
+                            is_hi_lo_new := '1';
                             alu_opcode_new := ALU_DIVU;
                             rd_id_new := REG_HI;
                         when 33 => --addu

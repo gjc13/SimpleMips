@@ -188,6 +188,8 @@ package CPUComponent is
             rt_id : in  INTEGER RANGE 0 to 127;
             l_rd_id : in  INTEGER RANGE 0 to 127;
             ll_rd_id : in  INTEGER RANGE 0 to 127;
+            l_is_hi_lo : in  STD_LOGIC;
+            ll_is_hi_lo : in  STD_LOGIC;
             l_is_reg_write : in  STD_LOGIC;
             ll_is_reg_write : in  STD_LOGIC;
             is_reg_inst : in  STD_LOGIC;
@@ -196,6 +198,8 @@ package CPUComponent is
             immediate : in  STD_LOGIC_VECTOR (31 downto 0);
             l_result : in  STD_LOGIC_VECTOR (31 downto 0);
             ll_result : in  STD_LOGIC_VECTOR (31 downto 0);
+            l_hi_lo : in  STD_LOGIC_VECTOR (63 downto 0);
+            ll_hi_lo : in  STD_LOGIC_VECTOR (63 downto 0);
             lhs : out  STD_LOGIC_VECTOR (31 downto 0);
             rhs : out  STD_LOGIC_VECTOR (31 downto 0);
             rt_final : out STD_LOGIC_VECTOR (31 downto 0));

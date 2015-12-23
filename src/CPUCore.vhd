@@ -335,6 +335,8 @@ begin
         rt_id => rt_id_ex,
         l_rd_id => rd_id_mem,
         ll_rd_id => rd_id_wb,
+		l_is_hi_lo => is_hi_lo_mem,
+		ll_is_hi_lo => is_hi_lo_wb,
         l_is_reg_write => is_reg_write_mem,
         ll_is_reg_write => is_reg_write_wb,
         is_reg_inst => is_reg_inst_ex,
@@ -343,6 +345,8 @@ begin
         immediate => immediate_ex,
         l_result => result_mem_final,
         ll_result => result_wb,
+		l_hi_lo => hi_lo_mem,
+		ll_hi_lo => hi_lo_wb,
         lhs => alu_lhs,
         rhs => alu_rhs,
         rt_final => rt_ex_final

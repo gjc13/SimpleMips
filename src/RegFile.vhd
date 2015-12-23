@@ -143,13 +143,25 @@ begin
 
     process(rs_id, rt_id, rd_id, is_regwrite, rd_data, regs)
     begin
-        if(is_regwrite = '1' and rd_id = rt_id) then
-            rt_data <= rd_data;
+        if(is_regwrite = '1' and (rd_id = rt_id or (rt_id = REG_LO and is_hi_lo = '1'))) then
+			if (rt_id = REG_LO) then
+				rt_data <= hi_lo(31 downto 0);
+			elsif (rt_id = REG_HI) then
+				rt_data <= hi_lo(63 downto 32);
+			else
+            	rt_data <= rd_data;
+			end if;
         else
             rt_data <= regs(rt_id);
         end if;
-        if(is_regwrite = '1' and rd_id = rs_id) then
-            rs_data <= rd_data;
+        if(is_regwrite = '1' and (rd_id = rs_id or (rs_id = REG_LO and is_hi_lo = '1'))) then
+			if (rs_id = REG_LO) then
+				rs_data <= hi_lo(31 downto 0);
+			elsif (rs_id = REG_HI) then
+				rs_data <= hi_lo(63 downto 32);
+			else
+            	rs_data <= rd_data;
+			end if;
         else
             rs_data <= regs(rs_id);
         end if;

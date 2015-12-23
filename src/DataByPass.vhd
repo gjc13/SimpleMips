@@ -19,6 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.Definitions.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -34,6 +35,8 @@ entity DataByPass is
            rt_id : in  INTEGER RANGE 0 to 127;
            l_rd_id : in  INTEGER RANGE 0 to 127;
            ll_rd_id : in  INTEGER RANGE 0 to 127;
+           l_is_hi_lo : in  STD_LOGIC;
+           ll_is_hi_lo : in  STD_LOGIC;
            l_is_reg_write : in  STD_LOGIC;
            ll_is_reg_write : in  STD_LOGIC;
            is_reg_inst : in  STD_LOGIC;
@@ -42,9 +45,11 @@ entity DataByPass is
            immediate : in  STD_LOGIC_VECTOR (31 downto 0);
            l_result : in  STD_LOGIC_VECTOR (31 downto 0);
            ll_result : in  STD_LOGIC_VECTOR (31 downto 0);
+           l_hi_lo : in  STD_LOGIC_VECTOR (63 downto 0);
+           ll_hi_lo : in  STD_LOGIC_VECTOR (63 downto 0);
            lhs : out  STD_LOGIC_VECTOR (31 downto 0);
            rhs : out  STD_LOGIC_VECTOR (31 downto 0);
-			  rt_final : out STD_LOGIC_VECTOR (31 downto 0));
+           rt_final : out STD_LOGIC_VECTOR (31 downto 0));
 end DataByPass;
 
 architecture Behavioral of DataByPass is
@@ -53,10 +58,22 @@ begin
 	rt_final <= selected_rt;
 	process (rs_id, l_is_reg_write, ll_is_reg_write, l_rd_id, ll_rd_id, rs, l_result, ll_result)
 	begin
-		if (l_is_reg_write = '1' and l_rd_id /= 0 and l_rd_id = rs_id) then
-			lhs <= l_result;
-		elsif (ll_is_reg_write = '1' and ll_rd_id /= 0 and ll_rd_id = rs_id) then
-			lhs <= ll_result;
+		if (l_is_reg_write = '1' and l_rd_id /= 0 and (l_rd_id = rs_id or (l_is_hi_lo = '1' and rs_id = REG_LO))) then
+			if (rs_id = REG_HI) then
+				lhs <= l_hi_lo(63 downto 32);
+			elsif (rs_id = REG_LO) then
+				lhs <= l_hi_lo(31 downto 0);
+			else			
+				lhs <= l_result;
+			end if;
+		elsif (ll_is_reg_write = '1' and ll_rd_id /= 0 and (ll_rd_id = rs_id or (ll_is_hi_lo = '1' and rs_id = REG_LO))) then
+			if (rs_id = REG_HI) then
+				lhs <= ll_hi_lo(63 downto 32);
+			elsif (rs_id = REG_LO) then
+				lhs <= ll_hi_lo(31 downto 0);
+			else			
+				lhs <= ll_result;
+			end if;
 		else
 			lhs <= rs;
 		end if;
@@ -64,10 +81,22 @@ begin
 
 	process (rt_id, l_is_reg_write, ll_is_reg_write, l_rd_id, ll_rd_id, rt, l_result, ll_result)
 	begin
-		if (l_is_reg_write = '1' and l_rd_id /= 0 and l_rd_id = rt_id) then
-			selected_rt <= l_result;
-		elsif (ll_is_reg_write = '1' and ll_rd_id /= 0 and ll_rd_id = rt_id) then
-			selected_rt <= ll_result;
+		if (l_is_reg_write = '1' and l_rd_id /= 0 and (l_rd_id = rt_id or (l_is_hi_lo = '1' and rt_id = REG_LO))) then
+			if (rt_id = REG_HI) then
+				selected_rt <= l_hi_lo(63 downto 32);
+			elsif (rt_id = REG_LO) then
+				selected_rt <= l_hi_lo(31 downto 0);
+			else			
+				selected_rt <= l_result;
+			end if;
+		elsif (ll_is_reg_write = '1' and ll_rd_id /= 0 and (ll_rd_id = rt_id or (ll_is_hi_lo = '1' and rt_id = REG_LO))) then
+			if (rt_id = REG_HI) then
+				selected_rt <= ll_hi_lo(63 downto 32);
+			elsif (rt_id = REG_LO) then
+				selected_rt <= ll_hi_lo(31 downto 0);
+			else			
+				selected_rt <= ll_result;
+			end if;
 		else
 			selected_rt <= rt;
 		end if;
