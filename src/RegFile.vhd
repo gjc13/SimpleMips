@@ -104,6 +104,7 @@ begin
                     regs(COUNT_I) <= std_logic_vector(unsigned(regs(COUNT_I)) + ADD_VAL);
                 end if;
                 if force_cp0_write = '1' then
+                    report "intr/eret!";
                     regs(STATUS_I) <= status_new;
                     regs(CAUSE_I) <= cause_new;
                     regs(BADVADDR_I) <= badvaddr_new;
@@ -141,7 +142,8 @@ begin
 		end if;
 	end process;
 
-    process(rs_id, rt_id, rd_id, is_regwrite, rd_data, regs)
+    process(rs_id, rt_id, rd_id, is_regwrite, rd_data, regs,
+            is_hi_lo, hi_lo)
     begin
         if(is_regwrite = '1' and (rd_id = rt_id or (rt_id = REG_LO and is_hi_lo = '1'))) then
 			if (rt_id = REG_LO) then

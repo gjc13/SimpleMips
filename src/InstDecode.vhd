@@ -58,7 +58,7 @@ entity InstDecode is
             need_bubble : out STD_LOGIC;
             is_eret : out STD_LOGIC;
             is_syscall : out STD_LOGIC;
-				is_hi_lo : out STD_LOGIC;
+            is_hi_lo : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end InstDecode;
@@ -111,7 +111,7 @@ begin
         variable is_eret_new : std_logic;
         variable is_tlb_write_new : std_logic;
         variable is_syscall_new : std_logic;
-		  variable is_hi_lo_new : std_logic;
+		variable is_hi_lo_new : std_logic;
 
     begin
         op_code := to_integer(unsigned(inst(31 downto 26)));
@@ -463,10 +463,14 @@ begin
 
                 when others => NULL;
             end case;
-				if l_is_mem_read = '1' and is_branch_new = '1' then
-					is_branch_new := '0';
-					need_bubble_new := '1';
-				end if;
+            if l_is_mem_read = '1' and 
+                (is_branch_new = '1' or is_jump_new = '1') then
+				is_branch_new := '0';
+                is_jr_new := '0';
+                is_jl_new := '0';
+                is_jump_new := '0';
+				need_bubble_new := '1';
+			end if;
         end if;
 
         is_jump <= is_jump_new;
@@ -493,7 +497,7 @@ begin
         is_eret <= is_eret_new;
         is_tlb_write <= is_tlb_write_new;
         is_syscall <= is_syscall_new;
-		  is_hi_lo <= is_hi_lo_new;
+		is_hi_lo <= is_hi_lo_new;
     end process;
 
 end Behavioral;

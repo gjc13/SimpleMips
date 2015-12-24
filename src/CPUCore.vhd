@@ -184,8 +184,8 @@ architecture Behavioral of CPUCore is
 begin
     cpu_clk <= inner_cpu_clk;
     is_mem_ex<= is_mem_read_ex or is_mem_write_ex;
-	 is_next_mem <= is_mem_write_ex or is_mem_read_ex;
-	 result_ex_final <= result_ex_tlb when is_mem_ex = '1' else result_ex;
+	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
+	result_ex_final <= result_ex_tlb  when is_mem_ex = '1' else result_ex;
     result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
     is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
     is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
@@ -393,7 +393,7 @@ begin
     );
 
     ex_mem : EX_MEM_Regs Port Map(
-        result_ex => result_ex,
+        result_ex => result_ex_final,
         result_mem => result_mem,
         rt_ex => rt_ex_final,
         rt_mem => rt_mem,
@@ -462,7 +462,6 @@ begin
         is_in_slot => is_in_slot,
 		need_intr_out => need_intr,
         victim_addr => victim_pc,
-		  --??
         mem_addr => result_ex,
         mem_r => is_mem_read_ex,
         mem_w => is_mem_write_ex,
@@ -514,7 +513,7 @@ begin
 		tlb_intr =>tlb_intr,
 		clk => inner_cpu_clk,
 		reset => reset,
-		en =>is_mem_ex
+		en => is_mem_ex
 	 );
 
     --clk dividers

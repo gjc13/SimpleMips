@@ -95,19 +95,25 @@ begin
      badvaddr_new <= mem_addr;
 	 need_intr_out <= need_intr;
 	 
-	 process(intr_state, is_intr, status_old)
+	 process(intr_state, is_intr, status_old, tlb_intr, clk_intr)
 	 begin
-	     case intr_state is
-		        when IDLE =>
-				    need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
-				when OTHER_INTR =>
-				    need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
-				when TLB =>
-				    need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
-		  end case;
+         if tlb_intr = '1' then
+            need_intr <= '1';
+         else
+             case intr_state is
+                    when IDLE =>
+                        need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+                    when OTHER_INTR =>
+                        need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
+                    when TLB =>
+                        need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
+                    when others =>
+                        need_intr <= '0';
+              end case;
+         end if;
 	 end process;
 	
-	 process(tlb_intr, need_intr, is_eret)
+	 process(tlb_intr, need_intr, is_eret, reset, intr_state)
 	 variable others_to_tlb: std_logic;
 	 begin
 	     if (reset = '1') then

@@ -42,9 +42,11 @@ end alu;
 architecture Behavioral of alu is
 begin
 	process(lhs, rhs, shift_amount, alu_opcode)
+    variable hi_lo_new : std_logic_vector(63 downto 0);
     variable hi: std_logic_vector(31 downto 0);
     variable lo: std_logic_vector(31 downto 0);
 	begin
+        hi_lo_new := (others => '0');
 		case alu_opcode is
 			when ALU_NONE =>
 				result <= X"00000000";
@@ -83,17 +85,18 @@ begin
                 result <= X"00000000";
             when ALU_DIVU =>
                 if (rhs = X"00000000") then
-                    hi_lo <= (others => '0');
+                    hi_lo_new := (others => '0');
                 else
                     hi := std_logic_vector(unsigned(lhs) REM unsigned(rhs));
                     lo := std_logic_vector(unsigned(lhs) / unsigned(rhs));
-                    hi_lo(63 downto 32) <= hi;
-                    hi_lo(31 downto 0) <= lo;
+                    hi_lo_new(63 downto 32) := hi;
+                    hi_lo_new(31 downto 0) := lo;
                 end if;
                 result <= X"00000000";
 			when others =>
 				result <= X"00000000";
 		end case;
+        hi_lo <= hi_lo_new;
 	end process;
 end Behavioral;
 

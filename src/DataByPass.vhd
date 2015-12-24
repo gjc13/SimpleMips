@@ -56,7 +56,9 @@ architecture Behavioral of DataByPass is
 	signal selected_rt : std_logic_vector(31 downto 0);
 begin
 	rt_final <= selected_rt;
-	process (rs_id, l_is_reg_write, ll_is_reg_write, l_rd_id, ll_rd_id, rs, l_result, ll_result)
+	process (rs_id, l_is_reg_write, ll_is_reg_write, 
+            l_rd_id, ll_rd_id, rs, l_result, ll_result,
+            l_is_hi_lo, l_hi_lo, ll_is_hi_lo, ll_hi_lo)
 	begin
 		if (l_is_reg_write = '1' and l_rd_id /= 0 and (l_rd_id = rs_id or (l_is_hi_lo = '1' and rs_id = REG_LO))) then
 			if (rs_id = REG_HI) then
@@ -79,7 +81,9 @@ begin
 		end if;
 	end process;
 
-	process (rt_id, l_is_reg_write, ll_is_reg_write, l_rd_id, ll_rd_id, rt, l_result, ll_result)
+	process (rt_id, l_is_reg_write, ll_is_reg_write, 
+            l_rd_id, ll_rd_id, rt, l_result, ll_result,
+            l_is_hi_lo, l_hi_lo, ll_is_hi_lo, ll_hi_lo)
 	begin
 		if (l_is_reg_write = '1' and l_rd_id /= 0 and (l_rd_id = rt_id or (l_is_hi_lo = '1' and rt_id = REG_LO))) then
 			if (rt_id = REG_HI) then

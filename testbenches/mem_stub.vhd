@@ -42,7 +42,7 @@ entity mem_stub is
 end mem_stub;
 
 architecture Behavioral of mem_stub is
-	type RamType is array(0 to 2**14-1) of STD_LOGIC_VECTOR(31 downto 0);
+	type RamType is array(0 to 2**18-1) of STD_LOGIC_VECTOR(31 downto 0);
 
 	impure function InitRamFromFile(RamFileName: in string) return RamType is
 		FILE ramFile : text is in RamFileName;
@@ -58,10 +58,10 @@ architecture Behavioral of mem_stub is
 
 begin
 	process(w, r, reset)
-		variable ram: RamType := InitRamFromFile("mul.data");
+		variable ram: RamType := InitRamFromFile("ram.data");
 		variable addr_masked : integer;
 	begin
-		addr_masked := to_integer(unsigned(addr) and X"03fff");
+		addr_masked := to_integer(unsigned(addr) and X"3ffff");
 		if reset = '1' then
 			data <= (others => 'Z');
 		elsif w = '0' and r = '1' then

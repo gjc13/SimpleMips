@@ -126,6 +126,8 @@ ARCHITECTURE behavior OF test_cpu IS
     signal intr_flash : std_logic;
     signal data_flash : std_logic_vector(31 downto 0);
     signal flash_mem_addr : std_logic_vector(31 downto 0);
+    
+    signal com_intr : std_logic;
 
     -- Clock period definitions
     constant clk_period : time := 20 ns;
@@ -136,6 +138,7 @@ BEGIN
     addr_final <= addr_core when is_dma_mem = '0' else flash_mem_addr;
     data_final <= data_core when is_dma_mem = '0' else data_flash;
 
+    com_intr <= '0';
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
@@ -149,7 +152,7 @@ BEGIN
         addr_core => addr_core,
         data_core => data_core,
         data_mem => data_mem,
-        com_intr => intr_serial
+        com_intr => com_intr
     );
 
     memDecode: MemDecoder PORT MAP (
