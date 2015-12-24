@@ -130,7 +130,7 @@ ARCHITECTURE behavior OF test_cpu IS
     signal com_intr : std_logic;
 
     -- Clock period definitions
-    constant clk_period : time := 20 ns;
+    constant clk_period : time := 20 ps;
  
 BEGIN
     r_final <= r_core when is_dma_mem = '0' else r_flash;

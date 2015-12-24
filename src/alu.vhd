@@ -33,20 +33,23 @@ entity alu is
 	Port (  lhs : in  STD_LOGIC_VECTOR (31 downto 0);
 			rhs : in  STD_LOGIC_VECTOR (31 downto 0);
 			shift_amount : in INTEGER RANGE 0 to 31;
-			alu_opcode : in  INTEGER RANGE 0 to 17;
+			alu_opcode : in  INTEGER RANGE 0 to 63;
             hi_lo : out  STD_LOGIC_VECTOR(63 downto 0);
 			result : out STD_LOGIC_VECTOR(31 downto 0)
 		);
 end alu;
 
+
 architecture Behavioral of alu is
 begin
 	process(lhs, rhs, shift_amount, alu_opcode)
-    variable hi_lo_new : std_logic_vector(63 downto 0);
-    variable hi: std_logic_vector(31 downto 0);
-    variable lo: std_logic_vector(31 downto 0);
+        variable hi_lo_new : std_logic_vector(63 downto 0);
+        variable product_new : std_logic_vector(63 downto 0);
+        variable hi: std_logic_vector(31 downto 0);
+        variable lo: std_logic_vector(31 downto 0);
 	begin
         hi_lo_new := (others => '0');
+        product_new := std_logic_vector(signed(lhs) * signed(rhs));
 		case alu_opcode is
 			when ALU_NONE =>
 				result <= X"00000000";
@@ -81,7 +84,9 @@ begin
 			when ALU_SRLV =>
 				result <= std_logic_vector(shift_right(unsigned(rhs), to_integer(unsigned(lhs(4 downto 0)))));
             when ALU_MULT =>
-                hi_lo_new := std_logic_vector(signed(lhs) * signed(rhs));
+                result <= product_new(31 downto 0);
+            when ALU_MULT_64 =>
+                hi_lo_new := product_new;
                 result <= X"00000000";
             when ALU_DIVU =>
                 if (rhs = X"00000000") then

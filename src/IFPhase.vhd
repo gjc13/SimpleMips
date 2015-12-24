@@ -63,7 +63,7 @@ begin
 		if(reset = '1') then
 			pc <= START;
 		elsif(clk'event and clk = '1') then
-            if(pc_next = X"80000170") then
+            if(pc_next = X"80000188") then
                 report "Checkpoint!";
             end if;
             pc <= pc_next;

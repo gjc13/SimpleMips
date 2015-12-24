@@ -50,7 +50,7 @@ entity InstDecode is
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
-            alu_opcode : out  INTEGER RANGE 0 to 17;
+            alu_opcode : out  INTEGER RANGE 0 to 63;
             rd_id : out  INTEGER RANGE 0 to 127;
             rt_id : out  INTEGER RANGE 0 to 127; 
             rs_id : out  INTEGER RANGE 0 to 127; 
@@ -101,7 +101,7 @@ begin
         variable mem_opcode_new : integer RANGE 0 to 7;
         variable shift_amount_new : integer RANGE 0 to 31;
         variable is_reg_write_new : std_logic;
-        variable alu_opcode_new : integer RANGE 0 to 17;
+        variable alu_opcode_new : integer RANGE 0 to 63;
         variable rd_id_new : integer RANGE 0 to 127;
         variable rt_id_new : integer RANGE 0 to 127;
         variable rs_id_new : integer RANGE 0 to 127;
@@ -241,7 +241,7 @@ begin
                             is_reg_inst_new := '1';
                             is_reg_write_new := '1';
                             is_hi_lo_new := '1';
-                            alu_opcode_new := ALU_MULT;
+                            alu_opcode_new := ALU_MULT_64;
                             rd_id_new := REG_HI;
                         when 27 => --divu
                             is_reg_inst_new := '1';
@@ -423,10 +423,10 @@ begin
                         when others => NULL;
                     end case;
 					 
-					 when 28 => --mul
-						  is_reg_inst_new := '1';
+                when 28 => --mul
+                    is_reg_inst_new := '1';
                     is_reg_write_new := '1';
-                    is_hi_lo_new := '1';
+                    is_hi_lo_new := '0';
                     alu_opcode_new := ALU_MULT;
                     rd_id_new := rd_id_inst;
 

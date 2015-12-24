@@ -66,9 +66,9 @@ end ExceptionDecoder;
 
 architecture Behavioral of ExceptionDecoder is
     type State is (IDLE, CANCEL1, CANCEL2);
-	 type IntrState is (IDLE, OTHER_INTR, TLB);
-	 signal intr_state: IntrState;
-	 signal intr_next: IntrState;
+	type IntrState is (IDLE, OTHER_INTR, TLB);
+	signal intr_state: IntrState;
+	signal intr_next: IntrState;
     signal pr_state: State;
     signal next_state : State;
     signal is_cancel_fsm : std_logic;
@@ -114,9 +114,9 @@ begin
 	 end process;
 	
 	 process(tlb_intr, need_intr, is_eret, reset, intr_state)
-	 variable others_to_tlb: std_logic;
+        variable others_to_tlb: std_logic;
 	 begin
-	     if (reset = '1') then
+	      if (reset = '1') then
 				intr_next <= IDLE;
 				others_to_tlb := '0';
 		  else

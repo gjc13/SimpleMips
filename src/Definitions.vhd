@@ -19,7 +19,8 @@ package Definitions is
 	constant ALU_SLLV : INTEGER := 14;
 	constant ALU_SRLV : INTEGER := 15;
     constant ALU_MULT : INTEGER := 16;
-    constant ALU_DIVU : INTEGER := 17;
+    constant ALU_MULT_64 : INTEGER := 17;
+    constant ALU_DIVU : INTEGER := 18;
 
 	-- all branch compare is signed compare
 	constant B_ALL: INTEGER := 0;

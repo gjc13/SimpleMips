@@ -70,7 +70,7 @@ package CPUComponent is
             mem_opcode : out INTEGER RANGE 0 to 7;
             shift_amount : out INTEGER RANGE 0 to 31;
             is_reg_write : out  STD_LOGIC;
-            alu_opcode : out  INTEGER RANGE 0 to 17;
+            alu_opcode : out  INTEGER RANGE 0 to 63;
             rd_id : out  INTEGER RANGE 0 to 127;
             rt_id : out  INTEGER RANGE 0 to 127;
             rs_id : out  INTEGER RANGE 0 to 127;
@@ -155,8 +155,8 @@ package CPUComponent is
             is_reg_inst_ex : out  STD_LOGIC;
             shift_amount_id : in integer range 0 to 31;
             shift_amount_ex : out integer range 0 to 31;
-            alu_op_code_id : in integer range 0 to 17;
-            alu_op_code_ex : out integer range 0 to 17;
+            alu_op_code_id : in integer range 0 to 63;
+            alu_op_code_ex : out integer range 0 to 63;
             is_link_id : in  STD_LOGIC;
             is_link_ex : out  STD_LOGIC;
             mem_op_code_id : in  integer range 0 to 7;
@@ -209,7 +209,7 @@ package CPUComponent is
     Port (  lhs : in  STD_LOGIC_VECTOR (31 downto 0);
             rhs : in  STD_LOGIC_VECTOR (31 downto 0);
             shift_amount : in INTEGER RANGE 0 to 31;
-            alu_opcode : in  INTEGER RANGE 0 to 17;
+            alu_opcode : in  INTEGER RANGE 0 to 63;
             hi_lo : out  STD_LOGIC_VECTOR(63 downto 0);
             result : out STD_LOGIC_VECTOR(31 downto 0));
     end component;

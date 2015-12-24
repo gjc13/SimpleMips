@@ -45,8 +45,8 @@ ARCHITECTURE behavior OF test_alu IS
          lhs : IN  std_logic_vector(31 downto 0);
          rhs : IN  std_logic_vector(31 downto 0);
          shift_amount : IN  integer range 0 to 31;
-         alu_opcode : IN  integer range 0 to 17;
-			hi_lo : OUT  std_logic_vector(63 downto 0);
+         alu_opcode : IN  integer range 0 to 63;
+		 hi_lo : OUT  std_logic_vector(63 downto 0);
          result : OUT  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
@@ -56,7 +56,7 @@ ARCHITECTURE behavior OF test_alu IS
    signal lhs : std_logic_vector(31 downto 0) := (others => '0');
    signal rhs : std_logic_vector(31 downto 0) := (others => '0');
    signal shift_amount : integer range 0 to 31;
-   signal alu_opcode : integer range 0 to 17;
+   signal alu_opcode : integer range 0 to 63;
 	
 	--Outputs
  	signal hi_lo : std_logic_vector(63 downto 0);
@@ -72,7 +72,7 @@ BEGIN
           rhs => rhs,
           shift_amount => shift_amount,
           alu_opcode => alu_opcode,
-			 hi_lo => hi_lo,
+		  hi_lo => hi_lo,
           result => result
         );
 		  
@@ -93,7 +93,18 @@ BEGIN
 		alu_opcode <= ALU_ADD;
 		wait for 10 ns;	
 		assert result = X"FEFF00FF" report "add error" severity error;
-
+        
+		lhs <= X"00000020";
+		rhs <= X"0000003a";
+        
+		report "test mul";
+		alu_opcode <= ALU_MULT;
+		wait for 10 ns;	
+		assert result = X"00000740" report "mul error" severity error;
+        
+		lhs <= X"FF0000FF";
+		rhs <= X"FFFF0000";
+        
 		report "test sub";
 		alu_opcode <= ALU_SUB;
 		wait for 10 ns;	
@@ -163,7 +174,7 @@ BEGIN
 		assert result = X"0FFFF000" report "srlv error" severity error;
 		
 		report "test mult";
-		alu_opcode <= ALU_MULT;
+		alu_opcode <= ALU_MULT_64;
 		lhs <= X"05397FB1";
 		rhs <= X"00BC614E";
 		wait for 10 ns;

@@ -44,8 +44,8 @@ entity ID_EX_Regs is
 			is_reg_inst_ex : out  STD_LOGIC;
 			shift_amount_id : in  integer range 0 to 31;
 			shift_amount_ex : out integer range 0 to 31;
-			alu_op_code_id : in integer range 0 to 17;
-			alu_op_code_ex : out integer range 0 to 17;
+			alu_op_code_id : in integer range 0 to 63;
+			alu_op_code_ex : out integer range 0 to 63;
 			is_link_id : in  STD_LOGIC;
 			is_link_ex : out  STD_LOGIC;
 			mem_op_code_id : in  integer range 0 to 7;

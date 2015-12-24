@@ -80,7 +80,7 @@ architecture Behavioral of CPUCore is
     signal mem_op_code_id : integer range 0 to 7;
     signal shift_amount_id : integer range 0 to 31;
     signal is_reg_write_id : std_logic;
-    signal alu_op_code_id : integer range 0 to 17;
+    signal alu_op_code_id : integer range 0 to 63;
     signal rd_id_id : integer range 0 to 127;
     signal immediate_id : std_logic_vector(31 downto 0);
     signal inst_bubble_id : std_logic;
@@ -93,7 +93,7 @@ architecture Behavioral of CPUCore is
     signal immediate_ex : std_logic_vector(31 downto 0);
     signal is_reg_inst_ex : std_logic;
     signal shift_amount_ex : integer range 0 to 31;
-    signal alu_op_code_ex : integer range 0 to 17;
+    signal alu_op_code_ex : integer range 0 to 63;
     signal is_link_ex : std_logic;
     signal mem_op_code_ex : integer range 0 to 7;
     signal is_mem_read_ex : std_logic;
