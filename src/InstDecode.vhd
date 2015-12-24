@@ -422,6 +422,13 @@ begin
 							end case;
                         when others => NULL;
                     end case;
+					 
+					 when 28 => --mul
+						  is_reg_inst_new := '1';
+                    is_reg_write_new := '1';
+                    is_hi_lo_new := '1';
+                    alu_opcode_new := ALU_MULT;
+                    rd_id_new := rd_id_inst;
 
                 when 32 => --lb
                     is_mem_read_new := '1';

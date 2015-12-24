@@ -81,7 +81,7 @@ begin
 			when ALU_SRLV =>
 				result <= std_logic_vector(shift_right(unsigned(rhs), to_integer(unsigned(lhs(4 downto 0)))));
             when ALU_MULT =>
-                hi_lo <= std_logic_vector(signed(lhs) * signed(rhs));
+                hi_lo_new := std_logic_vector(signed(lhs) * signed(rhs));
                 result <= X"00000000";
             when ALU_DIVU =>
                 if (rhs = X"00000000") then

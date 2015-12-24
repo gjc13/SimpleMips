@@ -112,8 +112,12 @@ begin
                     regs(EPC_I) <= epc_new;
                     if (is_regwrite = '1' and rd_id /= 0 and (rd_id < 32 or rd_id = REG_HI or rd_id = REG_LO)) then
                         if (is_hi_lo = '1') then
-                            regs(REG_HI) <= hi_lo(63 downto 32);
-                            regs(REG_LO) <= hi_lo(31 downto 0);
+								    if (rd_id /= REG_HI and rd_id /= REG_LO) then
+									     regs(rd_id) <= hi_lo(31 downto 0);
+									 else
+                                regs(REG_HI) <= hi_lo(63 downto 32);
+                                regs(REG_LO) <= hi_lo(31 downto 0);
+									 end if;
                         else
                             regs(rd_id) <= rd_data;
                         end if;
@@ -122,8 +126,12 @@ begin
                 else
                     if (is_regwrite = '1' and rd_id /= 0 and rd_id /= COUNT_I) then
                         if (is_hi_lo = '1') then
-                            regs(REG_HI) <= hi_lo(63 downto 32);
-                            regs(REG_LO) <= hi_lo(31 downto 0);
+                            if (rd_id /= REG_HI and rd_id /= REG_LO) then
+									     regs(rd_id) <= hi_lo(31 downto 0);
+									 else
+                                regs(REG_HI) <= hi_lo(63 downto 32);
+                                regs(REG_LO) <= hi_lo(31 downto 0);
+									 end if;
                         else
                             regs(rd_id) <= rd_data;
                         end if;
