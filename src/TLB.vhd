@@ -66,7 +66,9 @@ begin
 					 --print_hex(entry_lo0);
 					 --print_hex(entry_lo1);
 					 
-					 tlbEntries(write_index) <= entry_hi(18 downto 0) & '0' & entry_lo0(19 downto 0) & '1' & entry_lo1(19 downto 0) & '1' & "00";
+					 tlbEntries(write_index) <= entry_hi(31 downto 13) & '0' 
+                        & entry_lo0(25 downto 6) & '1' 
+                        & entry_lo1(25 downto 6) & '1' & "00";
 			
 				end if;
         end if;

@@ -365,7 +365,7 @@ begin
 
                 when 11 => --sltiu
                     is_reg_write_new := '1';
-                    alu_opcode_new := ALU_LS;
+                    alu_opcode_new := ALU_LU;
                     rd_id_new := rt_id_inst;
                     immediate_new := X"0000" & inst(15 downto 0);
 
