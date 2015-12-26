@@ -68,6 +68,8 @@ entity ID_EX_Regs is
             is_tlb_write_ex : out STD_LOGIC;
             is_hi_lo_id : in STD_LOGIC;
             is_hi_lo_ex : out STD_LOGIC;
+            is_syscall_id : in STD_LOGIC;
+            is_syscall_ex : out STD_LOGIC;
 			clk : in STD_LOGIC;
 			reset: in STD_LOGIC);
 end ID_EX_Regs;
@@ -103,6 +105,7 @@ begin
             inst_bubble_ex <= inst_bubble_id;
             is_tlb_write_ex <= is_tlb_write_id;
             is_hi_lo_ex <= is_hi_lo_id;
+            is_syscall_ex <= is_syscall_id;
 		end if;
 	end process;
 end Behavioral;

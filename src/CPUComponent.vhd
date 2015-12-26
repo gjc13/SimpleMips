@@ -33,11 +33,13 @@ package CPUComponent is
             need_branch : in  STD_LOGIC;
             branch_pc : in STD_LOGIC_VECTOR (31 downto 0);
             data_mem : in  STD_LOGIC_VECTOR (31 downto 0);
+            epc: in STD_LOGIC_VECTOR (31 downto 0);
             addr_pc : out STD_LOGIC_VECTOR(31 downto 0);
             r_pc : out STD_LOGIC;
             w_pc : out STD_LOGIC;
             inst_if : out  STD_LOGIC_VECTOR (31 downto 0);
             npc_if : out  STD_LOGIC_VECTOR (31 downto 0);
+            target_pc : out STD_LOGIC_VECTOR (31 downto 0);
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -131,10 +133,10 @@ package CPUComponent is
             compare : out STD_LOGIC_VECTOR (31 downto 0);
             ebase : out STD_LOGIC_VECTOR (31 downto 0);
             epc : out STD_LOGIC_VECTOR(31 downto 0);
-				index : out STD_LOGIC_VECTOR(31 downto 0);
-				entryHi : out STD_LOGIC_VECTOR(31 downto 0);
-				entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
-				entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
+            index : out STD_LOGIC_VECTOR(31 downto 0);
+            entryHi : out STD_LOGIC_VECTOR(31 downto 0);
+            entryLo0 : out STD_LOGIC_VECTOR(31 downto 0);
+            entryLo1 : out STD_LOGIC_VECTOR(31 downto 0);
 			clk_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
@@ -179,6 +181,8 @@ package CPUComponent is
             is_tlb_write_ex : out STD_LOGIC;
             is_hi_lo_id : in STD_LOGIC;
             is_hi_lo_ex : out STD_LOGIC;
+            is_syscall_id : in STD_LOGIC;
+            is_syscall_ex : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -277,8 +281,8 @@ package CPUComponent is
     
     component ExceptionDecoder is
     Port (  is_in_slot : in  STD_LOGIC;
-			need_intr_out : out STD_LOGIC;
             victim_addr : in STD_LOGIC_VECTOR (31 downto 0);
+            target_pc_addr : in STD_LOGIC_VECTOR (31 downto 0);
             mem_addr : in  STD_LOGIC_VECTOR (31 downto 0);
             mem_r : in  STD_LOGIC;
             mem_w : in  STD_LOGIC;
@@ -297,6 +301,7 @@ package CPUComponent is
             tlb_intr : in  STD_LOGIC;
             ade_intr : in  STD_LOGIC;
             is_eret : in  STD_LOGIC;
+            is_mem_ex : in STD_LOGIC;
             epc_new : out  STD_LOGIC_VECTOR (31 downto 0);
             status_new : out  STD_LOGIC_VECTOR (31 downto 0);
             cause_new : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -305,6 +310,8 @@ package CPUComponent is
             handler_addr : out  STD_LOGIC_VECTOR (31 downto 0);
             is_cancel : out  STD_LOGIC;
             force_cp0_write : out STD_LOGIC;
+            need_intr_out : out STD_LOGIC;
+            is_if_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
     end component;
@@ -321,16 +328,15 @@ package CPUComponent is
 		
 	 component TLB is
 	 Port (  index : in STD_LOGIC_VECTOR (31 downto 0);
-            is_tlb_write : in STD_LOGIC;
-            entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
-            entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
-            entry_lo1 : in  STD_LOGIC_VECTOR (31 downto 0);
-            vaddr : in  STD_LOGIC_VECTOR (31 downto 0);
-            paddr : out  STD_LOGIC_VECTOR (31 downto 0);
-            tlb_intr : out  STD_LOGIC;
-            clk : in STD_LOGIC;
-            reset : in STD_LOGIC;
-				en:in STD_LOGIC);
+             is_tlb_write : in STD_LOGIC;
+             entry_hi : in  STD_LOGIC_VECTOR (31 downto 0);
+             entry_lo0 : in  STD_LOGIC_VECTOR (31 downto 0);
+             entry_lo1 : in  STD_LOGIC_VECTOR (31 downto 0);
+             vaddr : in  STD_LOGIC_VECTOR (31 downto 0);
+             paddr : out  STD_LOGIC_VECTOR (31 downto 0);
+             tlb_intr : out  STD_LOGIC;
+             clk : in STD_LOGIC;
+             reset : in STD_LOGIC);
 	 end component;
 end CPUComponent;
 

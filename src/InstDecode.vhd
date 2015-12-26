@@ -413,12 +413,12 @@ begin
 									 --report("mtc0");
                         when 16 =>
 							case funct is
-							when 2 => --tlbwi
-								is_tlb_write_new := '1';
-							when 24 => --eret
-								is_eret_new := '1';
-							when others=>NULL;
-							
+                                when 2 => --tlbwi
+                                    is_tlb_write_new := '1';
+                                when 24 => --eret
+                                    is_eret_new := '1';
+                                when others=>NULL;
+                                
 							end case;
                         when others => NULL;
                     end case;

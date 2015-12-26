@@ -33,6 +33,7 @@ use work.Utilities.ALL;
 entity ExceptionDecoder is
     Port (  is_in_slot : in  STD_LOGIC;
             victim_addr : in STD_LOGIC_VECTOR (31 downto 0);
+            target_pc_addr : in STD_LOGIC_VECTOR (31 downto 0);
             mem_addr : in  STD_LOGIC_VECTOR (31 downto 0);
             mem_r : in  STD_LOGIC;
             mem_w : in  STD_LOGIC;
@@ -51,6 +52,7 @@ entity ExceptionDecoder is
             tlb_intr : in  STD_LOGIC;
             ade_intr : in  STD_LOGIC;
             is_eret : in  STD_LOGIC;
+            is_mem_ex : in STD_LOGIC;
             epc_new : out  STD_LOGIC_VECTOR (31 downto 0);
             status_new : out  STD_LOGIC_VECTOR (31 downto 0);
             cause_new : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -60,6 +62,7 @@ entity ExceptionDecoder is
             is_cancel : out  STD_LOGIC;
             force_cp0_write : out STD_LOGIC;
             need_intr_out : out STD_LOGIC;
+            is_if_intr : out STD_LOGIC;
             clk : in STD_LOGIC;
             reset : in STD_LOGIC);
 end ExceptionDecoder;
@@ -88,28 +91,33 @@ architecture Behavioral of ExceptionDecoder is
 
     constant ROM_EBASE : unsigned := X"BFC00200";
     constant BRANCH_OFFSET : unsigned := X"00000004";
+    
+    signal if_intr : std_logic;
 
 begin 
     --need_intr <= is_intr and status_old(IE) and (not status_old(EXL)); 
      force_cp0_write <= need_intr or is_eret; 
      badvaddr_new <= mem_addr;
 	 need_intr_out <= need_intr;
+     if_intr <= tlb_intr and (not is_mem_ex);
+     is_if_intr <= if_intr;
 	 
 	 process(intr_state, is_intr, status_old, tlb_intr, clk_intr)
 	 begin
          if tlb_intr = '1' then
             need_intr <= '1';
          else
-             case intr_state is
-                    when IDLE =>
-                        need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
-                    when OTHER_INTR =>
-                        need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
-                    when TLB =>
-                        need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
-                    when others =>
-                        need_intr <= '0';
-              end case;
+            need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+--              case intr_state is
+--                    when IDLE =>
+--                        need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+--                    when OTHER_INTR =>
+--                        need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
+--                    when TLB =>
+--                        need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
+--                    when others =>
+--                        need_intr <= '0';
+--              end case;
          end if;
 	 end process;
 	
@@ -159,20 +167,20 @@ begin
     begin
         if (reset = '1') then
             pr_state <= IDLE;
-				intr_state <= IDLE;
+            intr_state <= IDLE;
             is_cancel_fsm <= '0';
         elsif (clk'event and clk = '1') then
             pr_state <= next_state;
-				intr_state <= intr_next;
+            intr_state <= intr_next;
             is_cancel_fsm <= next_is_cancel;
         end if;
     end process;
 
-    process(need_intr, pr_state)
+    process(need_intr, pr_state, if_intr)
     begin
         case pr_state is 
             when IDLE =>
-                if need_intr = '1' then
+                if need_intr = '1' and if_intr = '0' then
                     next_state <= CANCEL1;
                     next_is_cancel <= '1';
                 else
@@ -191,20 +199,20 @@ begin
         end case;
     end process;
 
-    process(need_intr, is_cancel_fsm, pr_state)
+    process(need_intr, is_cancel_fsm, pr_state, if_intr)
     begin
-        if pr_state = IDLE then
+        if pr_state = IDLE and if_intr = '0' then
             is_cancel <= need_intr;
         else
             is_cancel <= is_cancel_fsm;
         end if;
     end process;
 
-    process(need_intr, is_eret, status_old, tlb_intr)
+    process(need_intr, is_eret, status_old)
         variable status : std_logic_vector(31 downto 0);
     begin
         status := status_old;
-        if need_intr = '1' and tlb_intr = '1' then
+        if need_intr = '1' then
             status(EXL) := '1';
         elsif is_eret = '1' then
             status(EXL) := '0';
@@ -270,18 +278,18 @@ begin
         else
             offset := X"00000000";
         end if;
-        if is_eret = '1' then
-            handler_addr <= epc_old;
-        elsif status_old(BEV) = '1' then
+        if status_old(BEV) = '1' then
             handler_addr <= std_logic_vector(offset + ROM_EBASE);
         else
             handler_addr <= std_logic_vector(offset + unsigned(ebase));
         end if;
     end process;
 
-    process(is_in_slot, victim_addr)
+    process(is_in_slot, victim_addr, if_intr, target_pc_addr)
     begin
-        if is_in_slot = '1' then
+        if if_intr = '1' then
+            epc_new <= target_pc_addr;
+        elsif is_in_slot = '1' then
             epc_new <= std_logic_vector(unsigned(victim_addr) - BRANCH_OFFSET);
         else
             epc_new <= victim_addr;

@@ -38,11 +38,13 @@ entity IFPhase is
 			need_branch : in  STD_LOGIC;
 			branch_pc : in STD_LOGIC_VECTOR (31 downto 0);
 			data_mem : in  STD_LOGIC_VECTOR (31 downto 0);
+            epc: in STD_LOGIC_VECTOR (31 downto 0);
 			addr_pc : out STD_LOGIC_VECTOR(31 downto 0);
 			r_pc : out STD_LOGIC;
 			w_pc : out STD_LOGIC;
 			inst_if : out  STD_LOGIC_VECTOR (31 downto 0);
 			npc_if : out  STD_LOGIC_VECTOR (31 downto 0);
+            target_pc : out STD_LOGIC_VECTOR (31 downto 0);
 			clk : in STD_LOGIC;
 			reset : in STD_LOGIC);
 end IFPhase;
@@ -52,11 +54,14 @@ architecture Behavioral of IFPhase is
 	constant PC_MOVE : unsigned := X"00000004";
 	signal pc: std_logic_vector(31 downto 0);
 	signal pc_next: std_logic_vector (31 downto 0);
+    signal common_pc_next : std_logic_vector(31 downto 0);
 
 begin
 
 	r_pc <= '1';
 	w_pc <= '0';
+    
+    target_pc <= common_pc_next;
 	
 	process(reset, clk)
 	begin
@@ -75,23 +80,31 @@ begin
 		addr_pc <= pc;
 		npc_if <= std_logic_vector(unsigned(pc) + PC_MOVE);
 	end process;
-
-	process(pc, branch_pc, is_bubble, 
-            need_branch, need_intr, is_eret,
-            handler_addr)
+    
+	process(pc, branch_pc, is_bubble, epc,
+            need_branch, need_intr, is_eret)
 	begin
-        if need_intr = '1' or is_eret = '1' then
-            pc_next <= handler_addr;
+        if is_eret = '1' then
+            common_pc_next <= epc;
 		elsif(is_bubble = '1' and need_branch = '1') then
 			-- if the branch delay slot cannot be loaded because of structural collision,
 			-- we move back and execute the branch instruction again
-			pc_next <= std_logic_vector(unsigned(pc) - PC_MOVE);
+			common_pc_next <= std_logic_vector(unsigned(pc) - PC_MOVE);
 		elsif(is_bubble = '1') then
-			pc_next <= pc;
+			common_pc_next <= pc;
 		elsif(need_branch = '1') then
-			pc_next <= branch_pc;
+			common_pc_next <= branch_pc;
 		else
-			pc_next <= std_logic_vector(unsigned(pc) + PC_MOVE);
+			common_pc_next <= std_logic_vector(unsigned(pc) + PC_MOVE);
+		end if;
+	end process;
+    
+	process(common_pc_next, need_intr, handler_addr)
+	begin
+        if need_intr = '1'  then
+            pc_next <= handler_addr;
+        else
+			pc_next <= common_pc_next;
 		end if;
 	end process;
 

@@ -145,7 +145,8 @@ architecture Behavioral of CPUCore is
 	 
     signal ebase : std_logic_vector(31 downto 0);
     signal is_intr : std_logic;
-    signal syscall_intr : std_logic;
+    signal is_syscall_id : std_logic;
+    signal is_syscall_ex : std_logic;
     signal clk_intr : std_logic;
     signal dma_intr : std_logic;
     signal ps2_intr : std_logic;
@@ -165,13 +166,11 @@ architecture Behavioral of CPUCore is
 	
     signal is_in_slot : std_logic;
     signal victim_pc : std_logic_vector(31 downto 0);
-    
-	 signal vaddr: std_logic_vector(31 downto 0);
 	 
-	 signal result_ex_final :std_logic_vector(31 downto 0);
-	 signal result_ex_tlb:std_logic_vector(31 downto 0);
-	 signal is_mem_ex:std_logic;
+	signal result_ex_final :std_logic_vector(31 downto 0);
+	signal is_mem_ex:std_logic;
     constant LINK_OFFSET : unsigned := X"00000004";
+    constant BUBBLE_OFFSET : unsigned := X"00000000";
 
     signal hi_lo_ex : std_logic_vector(63 downto 0);
     signal hi_lo_mem : std_logic_vector(63 downto 0);
@@ -181,11 +180,19 @@ architecture Behavioral of CPUCore is
     signal is_hi_lo_mem : std_logic;
     signal is_hi_lo_wb : std_logic;
 
+    signal target_pc_vaddr : std_logic_vector(31 downto 0);
+    signal vaddr : std_logic_vector(31 downto 0);
+    signal paddr : std_logic_vector(31 downto 0);
+    signal is_if_intr : std_logic;
+
+    signal pc_paddr : std_logic_vector(31 downto 0);
+    signal pc_paddr_next : std_logic_vector(31 downto 0);
+
 begin
     cpu_clk <= inner_cpu_clk;
     is_mem_ex<= is_mem_read_ex or is_mem_write_ex;
 	is_next_mem <= is_mem_write_ex or is_mem_read_ex;
-	result_ex_final <= result_ex_tlb  when is_mem_ex = '1' else result_ex;
+	result_ex_final <= paddr when is_mem_ex = '1' else result_ex;
     result_ex <= alu_result when is_link_ex = '0' else std_logic_vector(unsigned(npc_ex) + LINK_OFFSET);
     is_mem_read_ex_final <= is_mem_read_ex and (not is_cancel);
     is_mem_write_ex_final <= is_mem_write_ex and (not is_cancel);
@@ -195,12 +202,23 @@ begin
     inst_use <= inst_ex when inst_bubble_ex = '1' else inst_id;
 
     is_bubble_if <= is_bubble or inst_bubble_id or is_dma_mem;
-
-    is_intr <= syscall_intr or clk_intr or com_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
+    
+    is_intr <= is_syscall_ex or clk_intr or com_intr or dma_intr or ps2_intr or ri_intr or tlb_intr or ade_intr;
     dma_intr <= '0';
     ps2_intr <= '0';
     ri_intr <= '0';
     ade_intr <= '0';
+
+    vaddr <= result_ex when is_mem_ex = '1' else target_pc_vaddr;
+    pc_paddr_next <= handler_addr when need_intr = '1' else paddr;
+
+    process(inner_cpu_clk)
+    begin
+        if(inner_cpu_clk'event and inner_cpu_clk = '1') then
+            pc_paddr <= pc_paddr_next;
+        end if;
+    end process;
+
 
     if_phase: IFPhase Port Map(
         is_bubble => is_bubble_if,
@@ -210,11 +228,13 @@ begin
         need_branch => need_branch,
         branch_pc => branch_pc,
         data_mem => data_mem,
+        epc => epc_old,
         addr_pc => addr_pc,
         r_pc => r_pc,
         w_pc => w_pc,
         inst_if => inst_if,
         npc_if => npc_if,
+        target_pc => target_pc_vaddr,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -254,7 +274,7 @@ begin
         immediate => immediate_id,
         is_eret => is_eret,
         is_tlb_write => is_tlb_write_id,
-        is_syscall => syscall_intr,
+        is_syscall => is_syscall_id,
 		is_hi_lo => is_hi_lo_id,
         clk => inner_cpu_clk,
         reset => reset
@@ -326,6 +346,8 @@ begin
         is_tlb_write_ex => is_tlb_write_ex,
 		is_hi_lo_id => is_hi_lo_id,
 		is_hi_lo_ex => is_hi_lo_ex,
+        is_syscall_id => is_syscall_id,
+        is_syscall_ex => is_syscall_ex,
         clk => inner_cpu_clk,
         reset => reset
     );
@@ -423,7 +445,7 @@ begin
         r_mem => is_mem_read_mem,
         w_mem => is_mem_write_mem,
         is_dma_mem => is_dma_mem,
-        addr_pc => addr_pc,
+        addr_pc => pc_paddr,
         addr_mem => result_mem,
         is_bubble => is_bubble,
         addr_core => addr_core,
@@ -462,7 +484,8 @@ begin
         is_in_slot => is_in_slot,
 		need_intr_out => need_intr,
         victim_addr => victim_pc,
-        mem_addr => result_ex,
+        target_pc_addr => target_pc_vaddr,
+        mem_addr => vaddr,
         mem_r => is_mem_read_ex,
         mem_w => is_mem_write_ex,
         status_old => status_old,
@@ -471,7 +494,7 @@ begin
         entryhi_old => entryHi_old,
         ebase => ebase,
         is_intr => is_intr,
-        syscall_intr => syscall_intr,
+        syscall_intr => is_syscall_ex,
         clk_intr => clk_intr,
         com1_intr => com_intr,
         dma_intr => dma_intr,
@@ -480,6 +503,7 @@ begin
         tlb_intr => tlb_intr,
         ade_intr => ade_intr,
         is_eret => is_eret,
+        is_mem_ex => is_mem_ex,
         epc_new => epc_new,
         status_new => status_new,
         cause_new => cause_new,
@@ -488,13 +512,14 @@ begin
         handler_addr => handler_addr,
         is_cancel => is_cancel,
         force_cp0_write => force_cp0_write,
+        is_if_intr => is_if_intr,
         clk => inner_cpu_clk,
         reset => reset
     );
 
     victim_finder : VictimFinder Port Map(
         now_pc => addr_pc,
-        is_bubble => is_bubble,
+        is_bubble => is_bubble_if,
         pre_branch => is_branch_id,
         victim_pc => victim_pc,
         is_in_slot => is_in_slot,
@@ -508,12 +533,11 @@ begin
 		entry_hi =>entryHi_old,
         entry_lo0 =>entryLo0_old,
         entry_lo1 =>entryLo1_old,
-		vaddr => result_ex,
-        paddr => result_ex_tlb,
+		vaddr => vaddr,
+        paddr => paddr,
 		tlb_intr =>tlb_intr,
 		clk => inner_cpu_clk,
-		reset => reset,
-		en => is_mem_ex
+		reset => reset
 	 );
 
     --clk dividers

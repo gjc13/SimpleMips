@@ -40,8 +40,7 @@ entity TLB is
             paddr : out  STD_LOGIC_VECTOR (31 downto 0);
             tlb_intr : out  STD_LOGIC;
             clk : in STD_LOGIC;
-            reset : in STD_LOGIC;
-            en:in STD_LOGIC);
+            reset : in STD_LOGIC);
 end TLB;
 
 architecture Behavioral of TLB is
@@ -67,14 +66,14 @@ begin
 					 --print_hex(entry_lo1);
 					 
 					 tlbEntries(write_index) <= entry_hi(31 downto 13) & '0' 
-                        & entry_lo0(25 downto 6) & '1' 
-                        & entry_lo1(25 downto 6) & '1' & "00";
+                        & entry_lo0(25 downto 6) & entry_lo0(1) 
+                        & entry_lo1(25 downto 6) & entry_lo1(1) & "00";
 			
 				end if;
         end if;
     end process;
 
-    process(vaddr, tlbEntries,en) 
+    process(vaddr, tlbEntries) 
         variable hi : std_logic_vector(31 downto 0);
         variable intr : std_logic;
     begin
@@ -87,25 +86,29 @@ begin
                 if vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '0' then
                     --report "found tlb 0";
 					--print_hex(index);
-                    paddr <= tlbEntries(i)(43 downto 24) & vaddr(11 downto 0);					  
+                    if tlbEntries(i)(23) = '1' then
+                        paddr <= tlbEntries(i)(43 downto 24) & vaddr(11 downto 0);					  
                     --print_hex(tlbEntries(i)(43 downto 24) & vaddr(11 downto 0));
-					intr := '0';
+                        intr := '0';
+                    else
+                        intr := '1';
+                    end if;
                     exit;
                 elsif vaddr(31 downto 13) = tlbEntries(i)(63 downto 45) and vaddr(12) = '1' then
                     --report "found tlb 1";
-                    paddr <= tlbEntries(i)(22 downto 3) & vaddr(11 downto 0);					  
-                    intr := '0';
+                    if tlbEntries(i)(2) = '1' then
+                        paddr <= tlbEntries(i)(22 downto 3) & vaddr(11 downto 0);					  
+                        intr := '0';
+                    else
+                        intr := '1';
+                    end if;
                     exit;
                 else
                     paddr <= (others => '0');
                 end if;
             end loop;
         end if;
-		if(en = '1') then
-            tlb_intr <= intr;
-        else
-			tlb_intr<='0';
-		end if;
+        tlb_intr <= intr;
     end process;
 
 end Behavioral;
