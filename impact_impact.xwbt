@@ -1,8 +1,0 @@
-INTSTYLE=impact
-INFILE=/home/shs/ucore_mips/cpu0/impact.xsl
-OUTFILE=/home/shs/ucore_mips/cpu0/impact.xsl
-FAMILY=Single
-PART=Single
-WORKINGDIR=/home/shs/ucore_mips/cpu0
-LICENSE=iMPACT
-USER_INFO=iMPACT

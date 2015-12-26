@@ -73,3 +73,6 @@ dumpdata
 planAhead*
 *.tcl
 *~
+*.xml
+*.xwbt
+*.xsl
