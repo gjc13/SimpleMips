@@ -102,23 +102,17 @@ begin
      if_intr <= tlb_intr and (not is_mem_ex);
      is_if_intr <= if_intr;
 	 
-	 process(intr_state, is_intr, status_old, tlb_intr, clk_intr)
+	 process(intr_state, is_intr, status_old, tlb_intr, clk_intr, pr_state)
 	 begin
-         if tlb_intr = '1' then
-            need_intr <= '1';
-         else
-            need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
---              case intr_state is
---                    when IDLE =>
---                        need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
---                    when OTHER_INTR =>
---                        need_intr <= (tlb_intr or clk_intr) and status_old(IE) and (not status_old(EXL));
---                    when TLB =>
---                        need_intr <= clk_intr and status_old(IE) and (not status_old(EXL));
---                    when others =>
---                        need_intr <= '0';
---              end case;
-         end if;
+        if pr_state = IDLE then
+            if tlb_intr = '1' then
+                need_intr <= '1';
+            else
+                need_intr <= is_intr and status_old(IE) and (not status_old(EXL));
+            end if;
+        else
+            need_intr <= '0';
+        end if;
 	 end process;
 	
 	 process(tlb_intr, need_intr, is_eret, reset, intr_state)
@@ -227,35 +221,33 @@ begin
         variable cause : std_logic_vector(31 downto 0);
     begin
         cause := cause_old;
-        if need_intr = '1' then
-            cause(BD) := is_in_slot;
-            if tlb_intr = '1' then
-                if mem_r = '0' and mem_w = '1' then
-                    cause(EXCCODE) := "00011"; --TLBWS
-                elsif mem_r = '1' and mem_w = '0' then
-                    cause(EXCCODE) := "00010"; --TLBWL
-                end if;
-            elsif ri_intr = '1' then 
-                cause(EXCCODE) := "01010"; --RI
-            elsif syscall_intr = '1' then
-                cause(EXCCODE) := "01000"; --SYSCALL
-            elsif ade_intr = '1' then
-                if mem_r = '0' and mem_w = '1' then
-                    cause(EXCCODE) := "00101"; --ADEL
-                end if;
-            elsif clk_intr = '1' then
-                cause(EXCCODE) := "00000";
-                cause(IP) := "10000000";
-            elsif com1_intr = '1' then
-                cause(EXCCODE) := "00000";
-                cause(IP) := "00010000";
-            elsif dma_intr = '1' then
-                cause(EXCCODE) := "00000";
-                cause(IP) := "00001000";
-            elsif ps2_intr = '1' then
-                cause(EXCCODE) := "00000";
-                cause(IP) := "01000000";
+        cause(BD) := is_in_slot;
+        if tlb_intr = '1' then
+            if mem_r = '0' and mem_w = '1' then
+                cause(EXCCODE) := "00011"; --TLBWS
+            else
+                cause(EXCCODE) := "00010"; --TLBWL
             end if;
+        elsif ri_intr = '1' then 
+            cause(EXCCODE) := "01010"; --RI
+        elsif syscall_intr = '1' then
+            cause(EXCCODE) := "01000"; --SYSCALL
+        elsif ade_intr = '1' then
+            if mem_r = '0' and mem_w = '1' then
+                cause(EXCCODE) := "00101"; --ADEL
+            end if;
+        elsif clk_intr = '1' then
+            cause(EXCCODE) := "00000";
+            cause(IP) := "10000000";
+        elsif com1_intr = '1' then
+            cause(EXCCODE) := "00000";
+            cause(IP) := "00010000";
+        elsif dma_intr = '1' then
+            cause(EXCCODE) := "00000";
+            cause(IP) := "00001000";
+        elsif ps2_intr = '1' then
+            cause(EXCCODE) := "00000";
+            cause(IP) := "01000000";
         end if;
         cause_new <= cause;
     end process;

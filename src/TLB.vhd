@@ -69,7 +69,7 @@ begin
                         & entry_lo0(25 downto 6) & entry_lo0(1) 
                         & entry_lo1(25 downto 6) & entry_lo1(1) & "00";
 			
-				end if;
+            end if;
         end if;
     end process;
 
@@ -91,6 +91,7 @@ begin
                     --print_hex(tlbEntries(i)(43 downto 24) & vaddr(11 downto 0));
                         intr := '0';
                     else
+                        paddr <= (others => '0');
                         intr := '1';
                     end if;
                     exit;
@@ -100,6 +101,7 @@ begin
                         paddr <= tlbEntries(i)(22 downto 3) & vaddr(11 downto 0);					  
                         intr := '0';
                     else
+                        paddr <= (others => '0');
                         intr := '1';
                     end if;
                     exit;

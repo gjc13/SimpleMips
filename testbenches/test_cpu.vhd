@@ -67,7 +67,7 @@ ARCHITECTURE behavior OF test_cpu IS
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
             data_in : in  STD_LOGIC_VECTOR(31 downto 0);
             data_out : out STD_LOGIC_VECTOR(31 downto 0);
-            intr : in  STD_LOGIC;
+            intr : out  STD_LOGIC;
             w : in  STD_LOGIC;
             r : in STD_LOGIC;
             clk : in STD_LOGIC;
@@ -138,7 +138,6 @@ BEGIN
     addr_final <= addr_core when is_dma_mem = '0' else flash_mem_addr;
     data_final <= data_core when is_dma_mem = '0' else data_flash;
 
-    com_intr <= '0';
  
     -- Instantiate the Unit Under Test (UUT)
     uut: CPUCore PORT MAP (
@@ -242,12 +241,11 @@ BEGIN
     stim_proc: process
     begin       
         reset <= '1';
+        com_intr <= '0';
         wait for 100 ns;
         reset <= '0';
 
-        -- hold reset state for 100 ns.
-        wait for 5000 ns;   
-
+        -- hold reset state for 100 ns. 
 
         -- insert stimulus here 
 

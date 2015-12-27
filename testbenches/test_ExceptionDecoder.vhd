@@ -46,6 +46,8 @@ ARCHITECTURE behavior OF test_ExceptionDecoder IS
     signal cause_old : std_logic_vector(31 downto 0) := (others => '0');
     signal epc_old : std_logic_vector(31 downto 0) := (others => '0');
     signal entryhi_old : std_logic_vector(31 downto 0) := (others => '0');
+    signal target_pc_addr : std_logic_vector(31 downto 0) := (others => '0');
+    signal hi_lo : std_logic_vector(63 downto 0) := (others => '0');
     signal ebase : std_logic_vector(31 downto 0) := (others => '0');
     signal is_intr : std_logic := '0';
     signal syscall_intr : std_logic := '0';
@@ -59,6 +61,8 @@ ARCHITECTURE behavior OF test_ExceptionDecoder IS
     signal is_eret : std_logic := '0';
     signal clk : std_logic := '0';
     signal reset : std_logic := '0';
+    signal is_mem_ex : std_logic := '0';
+    signal is_hi_lo : std_logic := '0';
 
     --Outputs
     signal epc_new : std_logic_vector(31 downto 0);
@@ -131,6 +135,8 @@ BEGIN
           handler_addr => handler_addr,
           is_cancel => is_cancel,
           force_cp0_write => force_cp0_write,
+          target_pc_addr => target_pc_addr,
+          is_mem_ex => is_mem_ex,
           clk => clk,
           reset => reset
         );
@@ -145,7 +151,7 @@ BEGIN
           rt_data => rt_data,
           status_new => status_new,
           cause_new => cause_new,
-			 epc_new => epc_new,
+		  epc_new => epc_new,
           badvaddr_new => badvaddr_new,
           entry_hi_new => entryhi_new,
           force_cp0_write => force_cp0_write,
@@ -155,6 +161,8 @@ BEGIN
           compare => compare,
           ebase => ebase,
           epc => epc_old,
+          hi_lo => hi_lo,
+          is_hi_lo => is_hi_lo,
           clk => clk,
           reset => reset
         );
@@ -175,6 +183,18 @@ BEGIN
         -- hold reset state for 100 ns.
         wait for 100 ns;  
         reset <= '0';
+        is_intr <= '1';
+        syscall_intr <= '0';
+        clk_intr <= '0';
+        com1_intr <= '0';
+        dma_intr <= '0';
+        ps2_intr <= '0';
+        ri_intr <= '0';
+        tlb_intr <= '1';
+        ade_intr <= '0';
+        is_eret <= '1';
+        is_in_slot <= '0';
+        wait for clk_period;
         wait for clk_period;
         is_intr <= '1';
         syscall_intr <= '1';
@@ -192,11 +212,11 @@ BEGIN
         assert is_cancel = '0' report "is cancel error" severity error;
         assert force_cp0_write = '0' report "force_cp0_write error" severity error;
         is_intr <= '0';
-		  syscall_intr <= '0';
-		  is_eret <= '1';
+        syscall_intr <= '0';
+		is_eret <= '1';
         wait for clk_period;
-		  is_eret <= '0';
-		  wait for clk_period;
+		is_eret <= '0';
+		wait for clk_period;
 
         report "test syscall exception";
         rd_id <= STATUS_I;

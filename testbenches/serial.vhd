@@ -34,7 +34,7 @@ entity serial_stub is
     Port (  addr : in STD_LOGIC_VECTOR(31 downto 0);
 			data_in : in  STD_LOGIC_VECTOR(31 downto 0);
 			data_out : out  STD_LOGIC_VECTOR(31 downto 0);
-			intr : in  STD_LOGIC;
+			intr : out  STD_LOGIC;
 			w : in  STD_LOGIC;
 			r : in STD_LOGIC;
 			clk : in STD_LOGIC;
@@ -67,6 +67,13 @@ begin
 			end if;
 		end if;
 	end process;
+    
+    process
+    begin
+        intr <= '0';
+        wait for 650 us;
+        intr <= '1';
+    end process;
 
 end serialBehavioral;
 
